@@ -1,4 +1,4 @@
-package com.fogok;
+package com.fogok.spaceshipserver;
 
 public class UserInfo {
 	private String username;

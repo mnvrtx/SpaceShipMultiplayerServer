@@ -1,4 +1,4 @@
-package com.fogok;
+package com.fogok.spaceshipserver;
 
 import io.netty.buffer.ByteBuf;
 

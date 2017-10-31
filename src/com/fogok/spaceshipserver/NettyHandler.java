@@ -1,10 +1,12 @@
-package com.fogok;
+package com.fogok.spaceshipserver;
 
+import com.fogok.spaceshipserver.logic.LogicThreadPool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -16,7 +18,6 @@ class NettyHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Client has joined");
         channels.add(ctx.channel());
     }
 
@@ -28,40 +29,32 @@ class NettyHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
         ByteBuf buf = (ByteBuf)msg;
         try {
             byte[] req = new byte[buf.readableBytes()];
             buf.readBytes(req);
 
             String json = new String(req, encoding);
-            Channel incoming = ctx.channel();
-            for (Channel channel : channels) {
-                if (channel != incoming) {  //return data to all chanells
-                    channel.writeAndFlush(Unpooled.copiedBuffer(json.getBytes()));
+            if (json.charAt(0) == 'l') { //first read, it is login pass     json == "l USERNAME"
+                LogicThreadPool.getInstance().clientAdd(json);
+                System.out.println("Client has joined. Login: %s" + json.split(" ")[1]);
+            } else {
+                Channel incoming = ctx.channel();
+                for (Channel channel : channels) {
+                    if (channel != incoming) {  //return data to all chanells
+                        channel.writeAndFlush(Unpooled.copiedBuffer(json.getBytes()));
+                    }
                 }
+                System.out.println("Client response:" + json);
             }
-            System.out.println("Client response:" + json);
+
         } finally {
             buf.release();
         }
-
-//        String readedData = Utils.getString(msg);
-//        String readedData = "{\"t\":\"0\",\"x\":\"5.719\",\"y\":\"2.017\",\"a\":[175.437,0.0,1.4]}";
+    }
 
 
-
-
-
-
-//        System.out.println("StartRead");
-//        ByteBuf buf = (ByteBuf)msg;
-//        byte[] req = new byte[buf.readableBytes()];
-//        buf.readBytes(req);
-//
-//        String body = new String(req, encoding);
-//        System.out.println("the time server receive order : " + body);
-
+    private void buisnessLogic(String json){
 
     }
 
