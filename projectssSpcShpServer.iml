@@ -10,7 +10,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Downloads/netty-all-4.1.15.Final.jar!/" />
+          <root url="file://$MODULE_DIR$/libs/netty-all-4.1.15.Final.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
