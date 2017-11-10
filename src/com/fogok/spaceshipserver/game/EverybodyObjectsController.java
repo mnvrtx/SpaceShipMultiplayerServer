@@ -27,4 +27,8 @@ public class EverybodyObjectsController implements Controller {
         demolishingObjectsController.handle(pause);
         playerObjectsController.handle(pause);
     }
+
+    public EveryBodyPool getEveryBodyObjectsPool() {
+        return everyBodyObjectsPool;
+    }
 }

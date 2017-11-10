@@ -1,15 +1,12 @@
 package com.fogok.spaceshipserver.logic;
 
 import com.fogok.dataobjects.utils.Serialization;
-import com.fogok.spaceshipserver.NettyHandler;
 
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 
 public class LogicThreadPool {
@@ -22,10 +19,9 @@ public class LogicThreadPool {
 
     public static class LogicData{
         private Channel channel;
-        private String login;
-        public LogicData(final Channel channel, final String login) {
+
+        public LogicData(final Channel channel) {
             this.channel = channel;
-            this.login = login;
         }
 
 
@@ -33,10 +29,6 @@ public class LogicThreadPool {
             return channel;
         }
 
-
-        public String getLogin() {
-            return login;
-        }
     }
 
     private final HashMap<Integer, LogicData> loginsClients;
@@ -51,8 +43,11 @@ public class LogicThreadPool {
                     //main logic
 
                     for (LogicData logicData : loginsClients.values()) {
-                        buildResponse(logicData.channel.hashCode());  //TODO: revert to this line
-                        logicData.channel.writeAndFlush(Unpooled.copiedBuffer(fatJson.toString().getBytes(Charset.forName(NettyHandler.encoding))));
+//                        buildResponse(logicData.channel.hashCode());  //TODO: revert to this line
+
+//                        Output output = new Output();
+//                        Serialization.getInstance().getKryo().writeObject();
+//                        logicData.channel.writeAndFlush(Serialization.getInstance().getKryo().);
                     }
 
                 }
@@ -66,26 +61,14 @@ public class LogicThreadPool {
         Serialization.getInstance();
     }
 
-    private void buildResponse(int hashcodesendchannel){
-        fatJson.setLength(0);
-        fatJson.append(JSONElements[6]);
-        int iters = 0;
-        for (LogicData logicData : loginsClients.values()) { //handle all channels
-            if (logicData.channel.hashCode() != hashcodesendchannel) {
-                if (iters++ != 0)
-                    fatJson.append(JSONElements[4]);
-                fatJson.append(logicData.json);
-            }
-        }
-        fatJson.append(JSONElements[7]);
-    }
+
 
     public void clientAdd(final LogicData logicData) {
         loginsClients.put(logicData.getChannel().hashCode(), logicData);
     }
 
-    public void clientHandle(int hashcodeChannel, final String json){
-        loginsClients.get(hashcodeChannel).updateJson(json);
+    public void clientHandle(int hashcodeChannel){
+        //loginsClients.get(hashcodeChannel)
     }
 
     public void clientLeft(final Channel channel) {
