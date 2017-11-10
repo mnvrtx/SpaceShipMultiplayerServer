@@ -1,8 +1,8 @@
-package com.fogok.spaceshipserver.game.weapons.bullets.simplebluster;
+package com.fogok.spaceshipserver.game.gameobjects.weapons.bullets.simplebluster;
 
 
 import com.fogok.dataobjects.gameobjects.weapons.BulletObjectBase;
-import com.fogok.spaceshipserver.game.weapons.bullets.BulletObjectControllerBase;
+import com.fogok.spaceshipserver.game.gameobjects.weapons.bullets.BulletObjectControllerBase;
 
 import static com.fogok.dataobjects.gameobjects.weapons.BulletObjectBase.AdditParams.TIMEALIVE;
 

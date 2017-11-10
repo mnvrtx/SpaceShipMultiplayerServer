@@ -1,11 +1,11 @@
-package com.fogok.spaceshipserver.game.weapons.bullets;
-
+package com.fogok.spaceshipserver.game.gameobjects.weapons.bullets;
 
 import com.fogok.dataobjects.GameObject;
 import com.fogok.dataobjects.GameObjectsType;
 import com.fogok.dataobjects.gameobjects.weapons.BulletObjectBase;
+import com.fogok.dataobjects.utils.EveryBodyPool;
 import com.fogok.spaceshipserver.game.UnionControllerBase;
-import com.fogok.spaceshipserver.game.weapons.Weapon;
+import com.fogok.spaceshipserver.game.gameobjects.weapons.Weapon;
 
 public abstract class UnionControllerBulletObjectsBase<T extends BulletObjectBase, E extends BulletObjectControllerBase> extends UnionControllerBase implements Weapon {
 
@@ -15,15 +15,15 @@ public abstract class UnionControllerBulletObjectsBase<T extends BulletObjectBas
 
     private E bulletObjectController;
 
-    public UnionControllerBulletObjectsBase(GameObjectsType objectType, ControllerManager controllerManager, E bulletObjectController, NetworkData networkData) {
-        super(objectType, controllerManager, networkData);
+    public UnionControllerBulletObjectsBase(GameObjectsType objectType, EveryBodyPool everyBodyPool, E bulletObjectController) {
+        super(objectType, everyBodyPool);
         this.bulletObjectController = bulletObjectController;
     }
 
     @Override
     public void fire(float x, float y, float speed, int direction){
         @SuppressWarnings("unchecked")
-        T item = (T) everyBodyPool.obtain(objectType, false);
+        T item = (T) everyBodyPool.obtain(objectType);
         bulletObjectController.setHandledObject(item);
         bulletObjectController.fire(x, y, speed, direction);
         addBulletPostAction(item);

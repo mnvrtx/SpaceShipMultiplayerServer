@@ -1,17 +1,25 @@
 package com.fogok.spaceshipserver.game;
 
 
+import com.fogok.dataobjects.utils.EveryBodyPool;
 import com.fogok.spaceshipserver.game.gameobjects.PlayerObjectsController;
-import com.fogok.spaceshipserver.game.weapons.DemolishingObjectsController;
+import com.fogok.spaceshipserver.game.gameobjects.weapons.DemolishingObjectsController;
 
 public class EverybodyObjectsController implements Controller {
 
     private DemolishingObjectsController demolishingObjectsController;
     private PlayerObjectsController playerObjectsController;
 
-    public EverybodyObjectsController(ControllerManager controllerManager, NetworkData networkData) {
-        demolishingObjectsController = new DemolishingObjectsController(controllerManager, networkData);
-        playerObjectsController = new PlayerObjectsController(demolishingObjectsController, controllerManager, networkData);
+    //region Pool system
+    private static final int bufferSize = 100;
+
+    private final EveryBodyPool everyBodyObjectsPool;
+    //endregion
+
+    public EverybodyObjectsController() {
+        everyBodyObjectsPool = new EveryBodyPool(bufferSize);
+        demolishingObjectsController = new DemolishingObjectsController(everyBodyObjectsPool);
+        playerObjectsController = new PlayerObjectsController(demolishingObjectsController, everyBodyObjectsPool);
     }
 
     @Override

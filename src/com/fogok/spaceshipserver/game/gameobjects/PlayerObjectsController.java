@@ -1,28 +1,25 @@
 package com.fogok.spaceshipserver.game.gameobjects;
 
-import com.fogok.spaceships.control.Controller;
-import com.fogok.spaceships.control.ControllerManager;
-import com.fogok.spaceships.control.game.gameobjects.ships.simpleship.SimpleShipObjectController;
-import com.fogok.spaceships.control.game.gameobjects.ships.simpleship.UnionControllerSimpleShipObjs;
-import com.fogok.spaceships.control.game.weapons.DemolishingObjectsController;
-import com.fogok.spaceships.model.NetworkData;
 import com.fogok.dataobjects.GameObjectsType;
+import com.fogok.dataobjects.utils.EveryBodyPool;
+import com.fogok.spaceshipserver.game.Controller;
+import com.fogok.spaceshipserver.game.gameobjects.ships.simpleship.SimpleShipObjectController;
+import com.fogok.spaceshipserver.game.gameobjects.ships.simpleship.UnionControllerSimpleShipObjs;
+import com.fogok.spaceshipserver.game.gameobjects.weapons.DemolishingObjectsController;
 
-public class PlayerObjectsController implements Controller{
+public class PlayerObjectsController implements Controller {
 
     /*
      * Класс, который отвечает за все контроллеры, которые связаны непосредственно с игроком. Здесь только конкретные реализации
      */
 
     private UnionControllerSimpleShipObjs unionControllerSimpleShipObjs;
-    private NetworkData networkData;
 
-    public PlayerObjectsController(DemolishingObjectsController demolishingObjectsController, ControllerManager controllerManager, NetworkData networkData) {
-        this.networkData = networkData;
-        SimpleShipObjectController simpleShipObjectController = new SimpleShipObjectController(controllerManager.getJoyStickController(), demolishingObjectsController.getBlusterBulletController());
-        unionControllerSimpleShipObjs = new UnionControllerSimpleShipObjs(controllerManager, simpleShipObjectController, networkData);
-        simpleShipObjectController.setHandledObject(controllerManager.getEveryBodyObjectsPool().obtain(GameObjectsType.SimpleShip, false));
-        simpleShipObjectController.add();
+    public PlayerObjectsController(DemolishingObjectsController demolishingObjectsController, EveryBodyPool everyBodyPool) {
+        SimpleShipObjectController simpleShipObjectController = new SimpleShipObjectController(demolishingObjectsController.getBlusterBulletController());
+        unionControllerSimpleShipObjs = new UnionControllerSimpleShipObjs(everyBodyPool, simpleShipObjectController);
+        simpleShipObjectController.setHandledObject(everyBodyPool.obtain(GameObjectsType.SimpleShip));
+        simpleShipObjectController.add(0f, 0f);
     }
 
     @Override

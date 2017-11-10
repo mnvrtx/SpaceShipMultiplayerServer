@@ -1,16 +1,13 @@
-package com.fogok.spaceshipserver.game.weapons.bullets;
+package com.fogok.spaceshipserver.game.gameobjects.weapons.bullets;
 
-import com.badlogic.gdx.Gdx;
-import com.fogok.spaceships.control.game.ObjectController;
 import com.fogok.dataobjects.GameObject;
 import com.fogok.dataobjects.gameobjects.weapons.BulletObjectBase;
 import com.fogok.dataobjects.utils.GMUtils;
+import com.fogok.spaceshipserver.game.ObjectController;
 
-import static com.fogok.dataobjects.gameobjects.weapons.BulletObjectBase.AdditParams.DIRECTION;
-import static com.fogok.dataobjects.gameobjects.weapons.BulletObjectBase.AdditParams.SPEED;
-import static com.fogok.dataobjects.gameobjects.weapons.BulletObjectBase.AdditParams.TIMEALIVE;
+import static com.fogok.dataobjects.gameobjects.weapons.BulletObjectBase.AdditParams.*;
 
-public abstract class BulletObjectControllerBase implements ObjectController{
+public abstract class BulletObjectControllerBase implements ObjectController {
 
     /*
      * Основа для любой пульки
@@ -38,7 +35,7 @@ public abstract class BulletObjectControllerBase implements ObjectController{
             processClientAction(bulletObjectBase);
             float plusX = GMUtils.getNextX(bulletObjectBase.getAdditParam(SPEED), bulletObjectBase.getAdditParam(DIRECTION)), plusY = GMUtils.getNextY(bulletObjectBase.getAdditParam(SPEED), bulletObjectBase.getAdditParam(DIRECTION));
             bulletObjectBase.setPosition(bulletObjectBase.getX() + plusX, bulletObjectBase.getY() + plusY);
-            bulletObjectBase.setAdditParam(bulletObjectBase.getAdditParam(TIMEALIVE) - Gdx.graphics.getDeltaTime(), TIMEALIVE);
+            bulletObjectBase.setAdditParam(bulletObjectBase.getAdditParam(TIMEALIVE) - 0.016f /*TODO: исправить дельту**/, TIMEALIVE);
             if (isDead(bulletObjectBase))
                 postClientAction(bulletObjectBase);
         }
