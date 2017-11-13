@@ -1,5 +1,7 @@
 package com.fogok.spaceshipserver;
 
+import com.fogok.spaceshipserver.logic.LogicThreadPool;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -15,13 +17,15 @@ public class NettyHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-
+        System.out.println("add");
+        LogicThreadPool.getInstance().clientAdd(ctx.channel());
     }
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
 //        System.out.println(String.format("%s has left", LogicThreadPool.getInstance().getLoginsClients().get(ctx.channel().hashCode()).getLogin()));
-//        LogicThreadPool.getInstance().clientLeft(ctx.channel());
+        System.out.println("left");
+        LogicThreadPool.getInstance().clientLeft(ctx.channel());
     }
 
     @Override

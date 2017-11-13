@@ -1,7 +1,11 @@
 package com.fogok.spaceshipserver.logic;
 
+import com.esotericsoftware.kryo.io.Output;
+import com.fogok.dataobjects.ConsoleState;
 import com.fogok.dataobjects.utils.Serialization;
+import com.fogok.spaceshipserver.game.EverybodyObjectsController;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,11 +23,11 @@ public class LogicThreadPool {
 
     public static class LogicData{
         private Channel channel;
+        private ConsoleState consoleState;
 
         public LogicData(final Channel channel) {
             this.channel = channel;
         }
-
 
         public Channel getChannel() {
             return channel;
@@ -31,23 +35,28 @@ public class LogicThreadPool {
 
     }
 
+    private Output output = new Output(new ByteArrayOutputStream());
+//    private Input input = new Input(new ByteArrayInputStream(new byte[4096]));
+    private EverybodyObjectsController everybodyObjectsController;
+
     private final HashMap<Integer, LogicData> loginsClients;
 
     private LogicThreadPool() {
+
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         loginsClients = new HashMap<>(1000); //хз как >1к коннектов тут может быть
+
+        everybodyObjectsController = new EverybodyObjectsController();
+
         service.scheduleAtFixedRate(() -> {                     // нет рефактора, все сыро и на коленке, чисто для прототипа!
             try {
 
                 if (loginsClients.values().size() != 0) {
                     //main logic
 
+                    Serialization.getInstance().getKryo().writeObject(output, everybodyObjectsController.getEveryBodyObjectsPool());
                     for (LogicData logicData : loginsClients.values()) {
-//                        buildResponse(logicData.channel.hashCode());  //TODO: revert to this line
-
-//                        Output output = new Output();
-//                        Serialization.getInstance().getKryo().writeObject();
-//                        logicData.channel.writeAndFlush(Serialization.getInstance().getKryo().);
+                        logicData.channel.writeAndFlush(output.getBuffer());
                     }
 
                 }
@@ -57,17 +66,16 @@ public class LogicThreadPool {
             }
 
         }, 0, 16, TimeUnit.MILLISECONDS);
-
-        Serialization.getInstance();
     }
 
 
 
-    public void clientAdd(final LogicData logicData) {
-        loginsClients.put(logicData.getChannel().hashCode(), logicData);
+    public void clientAdd(final Channel channel) {
+        LogicData logicData = new LogicData(channel);
+        loginsClients.put(channel.hashCode(), logicData);
     }
 
-    public void clientHandle(int hashcodeChannel){
+    public void clientHandle(int hashcodeChannel) {
         //loginsClients.get(hashcodeChannel)
     }
 
