@@ -20,19 +20,12 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/externals/dataobject.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
           <root url="jar://$MODULE_DIR$/../SpaceShipMultiplayerClient/Externals/dataobjects.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/../SpaceShipMultiplayerClient/Externals/dataobjects.jar!/" />
+        </SOURCES>
       </library>
     </orderEntry>
   </component>
