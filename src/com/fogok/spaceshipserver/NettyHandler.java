@@ -30,12 +30,26 @@ public class NettyHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf buf = (ByteBuf)msg;
+        System.out.println("channel_read");
+        ByteBuf buf = (ByteBuf) msg;
         try {
-            byte[] req = new byte[buf.readableBytes()];
-            buf.readBytes(req);
+            byte[] response = new byte[buf.readableBytes()];
+            buf.readBytes(response);
+            LogicThreadPool.getInstance().clientHandle(ctx.channel(), response);
 
 
+//            ClientToServerDataStates state = Serialization.getInstance().getKryo().readObject(input, ClientToServerDataStates.class);
+//            switch (state) {
+//                case CONNECT_TO_SERVER:
+////                    LogicThreadPool.getInstance().clientHandle(ctx.channel()).updateState(ClientState.IN_HALL);
+//                    break;
+//                case KEEP_ALIVE:
+//
+//                    break;
+//                case PLAYER_DATA_WITH_CONSOLE_STATE:
+//
+//                    break;
+//            }
 
 //            String json = new String(req, encoding);
 //            if (json.charAt(0) == 'l') { //first read, it is login pass     json == "l USERNAME"
@@ -44,8 +58,6 @@ public class NettyHandler extends ChannelInboundHandlerAdapter {
 //                System.out.println(String.format("%s has joined", login));
 //            } else
 //                LogicThreadPool.getInstance().clientHandle(ctx.channel().hashCode(), json);     //тупо рефрешим данные
-
-
         } finally {
             buf.release();
         }

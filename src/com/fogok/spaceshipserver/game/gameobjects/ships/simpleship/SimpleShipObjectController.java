@@ -7,6 +7,6 @@ import com.fogok.spaceshipserver.game.gameobjects.weapons.Weapon;
 public class SimpleShipObjectController extends ShipObjectControllerBase {
 
     public SimpleShipObjectController(Weapon weapon) {
-        super(weapon);
+        super(null, weapon);
     }
 }

@@ -1,8 +1,7 @@
 package com.fogok.spaceshipserver.game.gameobjects.ships;
 
-
-import com.fogok.dataobjects.ConsoleState;
 import com.fogok.dataobjects.GameObject;
+import com.fogok.dataobjects.gameobjects.ConsoleState;
 import com.fogok.dataobjects.gameobjects.ships.ShipObjectBase;
 import com.fogok.dataobjects.utils.GMUtils;
 import com.fogok.spaceshipserver.game.ObjectController;
@@ -18,9 +17,11 @@ public abstract class ShipObjectControllerBase implements ObjectController {
 
     private ShipObjectBase shipObjectBase;
     private Weapon weapon;
+    private ConsoleState consoleState;
 
-    public ShipObjectControllerBase(Weapon weapon) {
+    public ShipObjectControllerBase(ConsoleState consoleState, Weapon weapon) {
         this.weapon = weapon;
+        this.consoleState = consoleState;
     }
 
     @Override
@@ -38,8 +39,8 @@ public abstract class ShipObjectControllerBase implements ObjectController {
 //        float x = CORDCONV.gCamX((int) joyStickController.joyStickOutputX);
 //        float y = CORDCONV.gCamY((int) joyStickController.joyStickOutputY);
 
-        float x = shipObjectBase.getConsoleState().getX();
-        float y = shipObjectBase.getConsoleState().getY();
+        float x = consoleState.getX();
+        float y = consoleState.getY();
 
         boolean isMoving = x != 0 || y != 0;
 
@@ -67,7 +68,7 @@ public abstract class ShipObjectControllerBase implements ObjectController {
     }
 
     private void fireLogicHandle(){
-        if (shipObjectBase.getConsoleFlag(ConsoleState.ConsoleFlagState.SIMPLE_FIRE)) {
+        if (consoleState.getFlag(ConsoleState.AdditBooleanParams.IS_FIRE.ordinal())) {
             float height = shipObjectBase.getAdditParam(SIZE);
             float width = height * shipObjectBase.getWidthDivHeight();
             weapon.fire(shipObjectBase.getX() + width / 2f, shipObjectBase.getY() + height / 2f, 0.003f, (int) shipObjectBase.getAdditParam(DIRECTION) + 90);
