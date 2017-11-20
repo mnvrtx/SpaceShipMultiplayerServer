@@ -1,0 +1,82 @@
+apply plugin: 'java'
+
+
+buildscript {
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        jcenter()
+    }
+    dependencies {
+
+    }
+
+}
+
+allprojects {
+    apply plugin: "idea"
+
+    version = '1.0'
+
+    ext{
+        dataObjectsPath = 'c:\\Users\\FGK\\StudioProjects\\SpaceShipMultiplayerClient\\dataobjects\\build\\libs\\dataobjects-1.0.jar'
+        fgklibPath = 'c:\\Users\\FGK\\StudioProjects\\rootmodules\\fgklib\\fgkio\\build\\libs\\fgkio-1.0.jar'
+
+        mainClassName = "com.fogok.spaceshipserver.Server"
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+    }
+}
+
+repositories{
+    mavenCentral()
+}
+
+//task execute(type:JavaExec) {
+//    main = mainClassName
+//    classpath = sourceSets.main.runtimeClasspath
+//}
+//
+//task run(dependsOn: classes, type: JavaExec) {
+//    main = mainClassName
+//    classpath = sourceSets.main.runtimeClasspath
+//    standardInput = System.in
+//}
+//
+//task debug(dependsOn: classes, type: JavaExec) {
+//    main = mainClassName
+//    classpath = sourceSets.main.runtimeClasspath
+//    standardInput = System.in
+//}
+//
+//task dist(type: Jar) {
+//    from files(sourceSets.main.output.classesDir)
+//    from files(sourceSets.main.output.resourcesDir)
+//    from {configurations.compile.collect {zipTree(it)}}
+//
+//    manifest {
+//        attributes 'Main-Class': mainClassName
+//    }
+//}
+//
+//dist.dependsOn classes
+
+dependencies{
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile files("$dataObjectsPath", "$fgklibPath")
+
+    compile fileTree(dir: "$dataObjectsPath\\..\\..\\..\\libs\\", include: ['*.jar'])
+    compile fileTree(dir: "$fgklibPath\\..\\..\\..\\libs\\", include: ['*.jar'], exclude: ['minlog-1.2.jar'])
+
+//    compile(project(':dataobjects')) {
+//        exclude group: 'com.esotericsoftware'
+//    }
+//    compile project(':fgkio')
+}

@@ -6,6 +6,7 @@ import com.fogok.dataobjects.PlayerGlobalData;
 import com.fogok.dataobjects.ServerState;
 import com.fogok.dataobjects.utils.ClientState;
 import com.fogok.dataobjects.utils.ClientToServerDataStates;
+import com.fogok.spaceshipserver.database.DatabaseWrapper;
 import com.fogok.spaceshipserver.game.EverybodyObjectsController;
 import com.fogok.spaceshipserver.utlis.ServerUtil;
 
@@ -19,13 +20,16 @@ import java.util.concurrent.TimeUnit;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 
+import static com.esotericsoftware.minlog.Log.*;
+
 public class LogicThreadPool {
 
+    //region Singleton realization
     private static LogicThreadPool instance;
-
     public static LogicThreadPool getInstance() {
         return instance == null ? instance = new LogicThreadPool() : instance;
     }
+    //endregion
 
     public static class LogicData{
         private Channel channel;
@@ -66,10 +70,13 @@ public class LogicThreadPool {
 
     private HallLogic hallLogic;
 
+    private DatabaseWrapper databaseWrapper;
+
     private LogicThreadPool() {
 
         serverState = new ServerState();
         hallLogic = new HallLogic(serverState);
+        databaseWrapper = new DatabaseWrapper();
 
         ScheduledExecutorService service = Executors.newScheduledThreadPool(2);     //вся эта параша выполняется асинхронно, так шо не боимся
         loginsClients = new HashMap<>(1000); //хз как >1к коннектов тут может быть
@@ -137,7 +144,7 @@ public class LogicThreadPool {
                 String login = input.readString();
                 String password = input.readString();
 
-                if (validateAccount(login, password)) {
+                if (databaseWrapper.validateAccount(login, password)) {
                     logicData.updateState(ClientState.IN_HALL);
 
                     output.writeInt(logicData.getClientState().ordinal(), true);
@@ -145,9 +152,9 @@ public class LogicThreadPool {
 
                     channel.writeAndFlush(Unpooled.copiedBuffer(output.getBuffer()));
                     output.clear();
-                    System.out.println("login complete");
+                    info("Login validation complete. Send token");
                 } else {
-                    System.out.println("error");
+                    info(String.format("Not login: %s and password: %s found in database", login, password));
                     channel.close();
                 }
 
@@ -164,10 +171,6 @@ public class LogicThreadPool {
     public void clientLeft(final Channel channel) {
         loginsClients.remove(channel.hashCode());
         serverState.setPlayersOnline(serverState.getPlayersOnline() - 1);
-    }
-
-    private boolean validateAccount(String login, String password) {
-        return login.equals("test1@test.com") && password.equals("123456");
     }
 
     public HashMap<Integer, LogicData> getLoginsClients() {

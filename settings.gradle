@@ -1,0 +1,5 @@
+//include 'dataobjects'
+//project(':dataobjects').projectDir = new File('c:\\Users\\FGK\\StudioProjects\\SpaceShipMultiplayerClient\\dataobjects')
+//include 'fgkio'
+//project(':fgkio').projectDir = new File('c:\\Users\\FGK\\StudioProjects\\rootmodules\\fgklib\\fgkio\\')
+

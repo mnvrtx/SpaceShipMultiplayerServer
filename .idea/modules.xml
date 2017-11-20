@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SpaceShipMultiplayerServer.iml" filepath="$PROJECT_DIR$/.idea/SpaceShipMultiplayerServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SpaceShipMultiplayerServer.iml" filepath="$PROJECT_DIR$/SpaceShipMultiplayerServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SpaceShipMultiplayerServer_main.iml" filepath="$PROJECT_DIR$/.idea/modules/SpaceShipMultiplayerServer_main.iml" group="SpaceShipMultiplayerServer" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SpaceShipMultiplayerServer_test.iml" filepath="$PROJECT_DIR$/.idea/modules/SpaceShipMultiplayerServer_test.iml" group="SpaceShipMultiplayerServer" />
     </modules>
   </component>
 </project>
