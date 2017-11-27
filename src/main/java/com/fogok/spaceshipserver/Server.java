@@ -54,12 +54,9 @@ public class Server {
     }
 
     public static void main(String[] args) throws Exception {
-
-//        System.out.println("qwe");
-        Fgkio.files.createLogSystem(Log.LEVEL_TRACE, "logs");
+        Fgkio.logging.createLogSystem(Log.LEVEL_TRACE, "SpaceShipsServer", "logs");
 
         int port = 15505;
-        Log.set(Log.LEVEL_TRACE);
         new Server(5).bind(port);
 
     }
