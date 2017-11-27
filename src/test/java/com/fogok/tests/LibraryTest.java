@@ -1,12 +1,14 @@
 package com.fogok.tests;
 
-import org.junit.Test;
-
 public class LibraryTest {
 
-    @Test
-    public void testSomeLibraryMethod() {
-
-//        assertTrue("someLibraryMethod should return 'true'", classUnderTest.someLibraryMethod());
-    }
+//    @Test
+//    public void test() {
+//        assertTrue("test should return 'true'", true);
+//    }
+//
+//    @Test
+//    public void test2() {
+//        assertTrue("test2 should return 'true'", true);
+//    }
 }
