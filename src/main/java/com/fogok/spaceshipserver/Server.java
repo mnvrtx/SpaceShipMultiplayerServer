@@ -11,8 +11,10 @@ import io.netty.channel.FixedRecvByteBufAllocator;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LoggingHandler;
 
-import static com.esotericsoftware.minlog.Log.*;
+import static com.esotericsoftware.minlog.Log.error;
+import static com.esotericsoftware.minlog.Log.info;
 
 public class Server {
     private final int sendNumber;
@@ -37,6 +39,7 @@ public class Server {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
                             ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
+                            ch.pipeline().addLast(new LoggingHandler());
                             ch.pipeline().addLast(new NettyHandler());
                             ch.pipeline().addLast(new ExceptionHandler());
                         }
@@ -53,8 +56,15 @@ public class Server {
         }
     }
 
+    /**
+     * @param args [ {debug boolean:true/false} ]
+     */
     public static void main(String[] args) throws Exception {
-        Fgkio.logging.createLogSystem(Log.LEVEL_TRACE, "SpaceShipsServer", "logs");
+        boolean debug = false;
+        if (args.length != 0 && args[0] != null) debug = args[0].equals("true");
+
+
+        Fgkio.logging.createLogSystem(Log.LEVEL_TRACE, "SpaceShipsServer", "logs", debug);
 
         int port = 15505;
         new Server(5).bind(port);

@@ -51,7 +51,7 @@
       <module filepath="$PROJECT_DIR$/SpaceShipMultiplayerServer.iml" fileurl="file://$PROJECT_DIR$/SpaceShipMultiplayerServer.iml"/>
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_7" assert-keyword="true" jdk-15="true" project-jdk-type="JavaSDK" assert-jdk-15="true" project-jdk-name="1.8">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" assert-keyword="true" jdk-15="true" project-jdk-type="JavaSDK" assert-jdk-15="true" project-jdk-name="1.8">
     <output url="file://$PROJECT_DIR$/out"/>
   </component>
   <component name="SvnBranchConfigurationManager">
