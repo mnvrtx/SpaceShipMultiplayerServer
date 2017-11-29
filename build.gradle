@@ -9,10 +9,14 @@
 
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'application'
 apply from: 'local.dependencies'
 
-ext{
-    mainClassName = "com.fogok.spaceshipserver.Server"
+mainClassName = "com.fogok.spaceshipserver.Server"
+applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
+
+configurations {
+    libraries
 }
 
 repositories {
@@ -20,7 +24,13 @@ repositories {
     mavenCentral()
     maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+    jcenter()
 }
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 
 dependencies{
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -30,6 +40,7 @@ dependencies{
     compile fileTree(dir: "$dataObjectsPath\\..\\..\\..\\libs\\", include: ['*.jar'])
     compile fileTree(dir: "$fgklibPath\\..\\..\\..\\libs\\", include: ['*.jar'], exclude: ['minlog-1.2.jar'])
 
+    compile "com.beust:jcommander:1.71"
 
     testCompile 'junit:junit:4.12'
 }

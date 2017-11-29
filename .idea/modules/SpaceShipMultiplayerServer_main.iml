@@ -12,16 +12,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../libs/netty-all-4.1.15.Final.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/build/libs/dataobjects-1.0.jar!/" />
+          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/libs/kryo-4.0.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -39,7 +30,16 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/libs/kryo-4.0.0.jar!/" />
+          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/libs/objenesis-1.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../libs/netty-all-4.1.15.Final.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -57,7 +57,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/libs/objenesis-1.2.jar!/" />
+          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/build/libs/dataobjects-1.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -72,5 +72,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="Gradle: com.beust:jcommander:1.71" level="project" />
   </component>
 </module>

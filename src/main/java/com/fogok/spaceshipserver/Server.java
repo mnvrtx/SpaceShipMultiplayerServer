@@ -1,7 +1,9 @@
 package com.fogok.spaceshipserver;
 
-import com.esotericsoftware.minlog.Log;
+import com.beust.jcommander.JCommander;
 import com.fogok.io.Fgkio;
+import com.fogok.io.logging.Logging;
+import com.fogok.spaceshipserver.utlis.CLIArgs;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -13,21 +15,21 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
 
-import static com.esotericsoftware.minlog.Log.error;
-import static com.esotericsoftware.minlog.Log.info;
+import static com.esotericsoftware.minlog.Log.*;
 
 public class Server {
-    private final int sendNumber;
 
-    public Server(int sendNumber) {
-        this.sendNumber = sendNumber;
+    //region Singleton realization
+    private static Server instance;
+    public static Server getInstance() {
+        return instance == null ? instance = new Server() : instance;
     }
-
+    //endregion
 
     /**
      * Start server cluster
      */
-    public void bind(int port) throws Exception {
+    public void startServerCluster(int port) throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -46,29 +48,22 @@ public class Server {
                     });
 
             ChannelFuture future = boot.bind(port).sync();
-            info("Start server success!");
+            info(String.format("Start server success with %s port!", port));
             future.channel().closeFuture().sync();
         } catch (Exception e) {
-            error("Error start server: ", e);
+            error(String.format("Error start server with %s port!", port), e);
         } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }
     }
 
-    /**
-     * @param args [ {debug boolean:true/false} ]
-     */
     public static void main(String[] args) throws Exception {
-        boolean debug = false;
-        if (args.length != 0 && args[0] != null) debug = args[0].equals("true");
+        CLIArgs cliArgs = new CLIArgs();
+        JCommander.newBuilder().addObject(cliArgs).build().parse(args);
 
-
-        Fgkio.logging.createLogSystem(Log.LEVEL_TRACE, "SpaceShipsServer", "logs", debug);
-
-        int port = 15505;
-        new Server(5).bind(port);
-
+        Fgkio.logging.createLogSystem(new Logging.LogSystemParams().setAppName("SpaceShipMultiplayerServer").setLogLevel(cliArgs.logLevel).setDebug(cliArgs.debug));
+        getInstance().startServerCluster(cliArgs.port);
     }
 }
 

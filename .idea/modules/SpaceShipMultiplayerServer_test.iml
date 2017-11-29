@@ -9,6 +9,15 @@
     </content>
     <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/build/libs/dataobjects-1.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="module" module-name="SpaceShipMultiplayerServer_main" />
     <orderEntry type="module-library">
       <library>
@@ -22,16 +31,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/build/libs/dataobjects-1.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/libs/objenesis-1.2.jar!/" />
+          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/libs/minlog-1.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -49,7 +49,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/libs/minlog-1.2.jar!/" />
+          <root url="jar://$USER_HOME$/Documents/spaceships_multiplayer/dataobjects/libs/objenesis-1.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -73,6 +73,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="Gradle: com.beust:jcommander:1.71" level="project" />
     <orderEntry type="library" name="Gradle: junit:junit:4.12" level="project" />
     <orderEntry type="library" name="Gradle: org.hamcrest:hamcrest-core:1.3" level="project" />
   </component>
