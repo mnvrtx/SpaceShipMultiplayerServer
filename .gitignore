@@ -1,5 +1,6 @@
 /build
-/.idea
+.idea/*
+!.idea/runConfigurations/
 /.gradle
 /logs
 local.properties

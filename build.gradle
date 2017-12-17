@@ -22,6 +22,10 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
+jar{
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+}
+
 
 dependencies{
     compile fileTree(dir: 'libs', include: ['*.jar'])
