@@ -1,0 +1,1 @@
+rename local.dependencies.example local.dependencies

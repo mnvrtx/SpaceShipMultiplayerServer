@@ -1,0 +1,4 @@
+ext{
+    dataObjectsPath = 'Paste here path'
+    fgklibPath = 'Paste here path'
+}

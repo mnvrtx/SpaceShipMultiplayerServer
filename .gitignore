@@ -3,6 +3,7 @@
 /.gradle
 /logs
 local.properties
+local.dependencies
 *.iml
 *.ipr
 *.iws
