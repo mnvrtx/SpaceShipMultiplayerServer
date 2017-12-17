@@ -1,4 +1,4 @@
 ext{
-    dataObjectsPath = 'c:\\Users\\oleg.karlovsky\\Documents\\spaceships_multiplayer\\dataobjects\\build\\libs\\dataobjects-1.0.jar'
-    fgklibPath = 'D:\\externalGithubProjects\\fgklib\\fgkio\\build\\libs\\fgkio-0.1.0.jar'
+    dataObjectsPath = 'Paste here path'
+    fgklibPath = 'Paste here path'
 }
