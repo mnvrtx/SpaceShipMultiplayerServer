@@ -20,7 +20,6 @@
     <method>
       <option name="Make" enabled="false" />
       <option name="Gradle.BeforeRunTask" enabled="true" tasks="clean build" externalProjectPath="$PROJECT_DIR$" vmOptions="" scriptParameters="" />
-      <option name="RunConfigurationTask" enabled="true" run_configuration_name="LibraryTest" run_configuration_type="AndroidJUnit" />
     </method>
   </configuration>
 </component>
