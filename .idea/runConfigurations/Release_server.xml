@@ -2,7 +2,7 @@
   <configuration default="false" name="Release server" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
-      <option name="externalProjectPath" value="" />
+      <option name="externalProjectPath" value="$PROJECT_DIR$" />
       <option name="externalSystemIdString" value="GRADLE" />
       <option name="scriptParameters" value="" />
       <option name="taskDescriptions">
@@ -10,6 +10,8 @@
       </option>
       <option name="taskNames">
         <list>
+          <option value="clean" />
+          <option value="build" />
           <option value="assembleDist" />
           <option value="distZip" />
           <option value="installDist" />
