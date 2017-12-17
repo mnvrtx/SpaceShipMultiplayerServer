@@ -1,1 +1,1 @@
-rename local.dependencies.example local.dependencies
+copy local.dependencies.example local.dependencies
