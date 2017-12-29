@@ -1,46 +1,21 @@
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'application'
 apply from: 'local.dependencies'
 
-mainClassName = "com.fogok.spaceshipserver.Server"
-applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
+allprojects{
+    apply plugin: 'idea'
 
-configurations {
-    libraries
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-    maven { url "https://oss.sonatype.org/content/repositories/releases/" }
-    jcenter()
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
-
-jar{
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
-}
-
-
-dependencies{
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-
-    def mayBeCorrectLocalDependencies = dataObjectsPath != 'Paste here path' && fgklibPath != 'Paste here path'
-
-    if (mayBeCorrectLocalDependencies){
-        compile files("$dataObjectsPath", "$fgklibPath")
-
-
-        compile fileTree(dir: "$dataObjectsPath\\..\\..\\..\\libs\\", include: ['*.jar'])
-        compile fileTree(dir: "$fgklibPath\\..\\..\\..\\libs\\", include: ['*.jar'], exclude: ['minlog-1.2.jar'])
+    configurations {
+        libraries
     }
 
-    compile "com.beust:jcommander:1.71"
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+        jcenter()
+    }
 
-    testCompile 'junit:junit:4.12'
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
 }

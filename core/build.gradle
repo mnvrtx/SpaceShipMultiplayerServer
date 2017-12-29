@@ -1,0 +1,23 @@
+plugins{
+    id 'java'
+    id 'application'
+}
+
+mainClassName = "com.fogok.spaceshipserver.Server"
+
+dependencies{
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    //region CoreDependencies
+    def mayBeCorrectLocalDependencies = dataObjectsPath != 'Paste here path' && fgklibPath != 'Paste here path'
+
+    if (mayBeCorrectLocalDependencies){
+        compile files("$dataObjectsPath", "$fgklibPath")
+
+        compile fileTree(dir: "$dataObjectsPath\\..\\..\\..\\libs\\", include: ['*.jar'])
+        compile fileTree(dir: "$fgklibPath\\..\\..\\..\\libs\\", include: ['*.jar'], exclude: ['minlog-1.2.jar'])
+    }
+    //endregion
+
+    compile "com.beust:jcommander:1.71"
+}
