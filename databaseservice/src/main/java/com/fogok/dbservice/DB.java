@@ -30,7 +30,7 @@ public class DB{
     }
 
     private void startServiceForOtherServices() throws IOException {
-        ServiceStarter.getInstance().startServiceAndCreateLogSystem(cliArgs,
+        ServiceStarter.getInstance().startService(cliArgs,
                 DBHandler.class, ExceptionHandler.class, false);
     }
 }

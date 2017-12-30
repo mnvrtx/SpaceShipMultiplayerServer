@@ -35,15 +35,14 @@ public class ServiceStarter {
         return cliArgs;
     }
 
-    private void createLog(CLIArgs cliArgs) throws IOException {
+    public void createLog(CLIArgs cliArgs) throws IOException {
         Fgkio.logging.createLogSystem(new Logging.LogSystemParams().setAppName(cliArgs.serviceName).setLogLevel(cliArgs.logLevel).setDebug(cliArgs.debug).setLogToConsole(true));
     }
 
-    public <T extends ChannelInboundHandlerAdapter, E extends ChannelDuplexHandler> void startServiceAndCreateLogSystem(CLIArgs cliArgs,
-                                               Class<T> coreHandler,
-                                               Class<E> exceptionHandler, boolean tcp) throws IOException
+    public <T extends ChannelInboundHandlerAdapter, E extends ChannelDuplexHandler> void startService(CLIArgs cliArgs,
+                                                                                                      Class<T> coreHandler,
+                                                                                                      Class<E> exceptionHandler, boolean tcp) throws IOException
     {
-        createLog(cliArgs);
         int port = cliArgs.port;
 
         EventLoopGroup bossGroup = new NioEventLoopGroup();

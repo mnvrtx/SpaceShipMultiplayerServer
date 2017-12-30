@@ -5,8 +5,6 @@ import com.fogok.spaceshipserver.utlis.ServiceStarter;
 
 import java.io.IOException;
 
-import io.netty.channel.Channel;
-
 public class Application {
 
     //region Singleton realization
@@ -16,9 +14,8 @@ public class Application {
     }
     //endregion
 
+    private ServiceLogic serviceLogic;
     private CLIArgs cliArgs;
-
-    private Channel dbChannel;
 
     public static void main(String[] args) throws IOException {
         getInstance().startAuthService(args);
@@ -34,11 +31,13 @@ public class Application {
     }
 
     private void startServiceForAllClients() throws IOException {
-        ServiceStarter.getInstance().startServiceAndCreateLogSystem(cliArgs,
-                AuthHandler.class, ExceptionHandler.class, false);
+        ServiceStarter.getInstance().createLog(cliArgs);
+        serviceLogic = new ServiceLogic();
+        ServiceStarter.getInstance().startService(cliArgs,
+                Handler.class, ExceptionHandler.class, true);
     }
 
-    public Channel getDbChannel() {
-        return dbChannel;
+    public ServiceLogic getServiceLogic() {
+        return serviceLogic;
     }
 }

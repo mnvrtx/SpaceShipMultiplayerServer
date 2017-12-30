@@ -30,7 +30,7 @@ public class Application {
     }
 
     private void startServiceForAuthentication() throws IOException {
-        ServiceStarter.getInstance().startServiceAndCreateLogSystem(cliArgs,
+        ServiceStarter.getInstance().startService(cliArgs,
                 RelayHandler.class, ExceptionHandler.class, false);
     }
 

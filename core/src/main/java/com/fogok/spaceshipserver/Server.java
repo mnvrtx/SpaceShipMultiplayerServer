@@ -5,7 +5,7 @@ public class Server {
     private static final String serviceName = "core_server";
 
     public static void main(String[] args) throws Exception {
-//        ServiceStarter.getInstance().startServiceAndCreateLogSystem(args, serviceName,
+//        ServiceStarter.getInstance().startService(args, serviceName,
 //                NettyHandler.class, ExceptionHandler.class, false);
     }
 }
