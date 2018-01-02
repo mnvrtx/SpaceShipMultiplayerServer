@@ -1,16 +1,24 @@
 package com.fogok.spaceshipserver.baseservice;
 
+import java.io.IOException;
+
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 
 import static com.esotericsoftware.minlog.Log.error;
+import static com.esotericsoftware.minlog.Log.info;
 
 public abstract class BaseExceptionHandler extends ChannelDuplexHandler {
+
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        error("Unhandled exception in server: ", cause);
+        if (cause instanceof IOException)
+            info(String.format("Force off connect: ", cause.getMessage().split("[\\r\\n]+")[1]));
+        else
+            error("Unhandled exception in server: ", cause);
         ctx.close();
     }
 

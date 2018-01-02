@@ -3,7 +3,7 @@ package com.fogok.authentication.actions;
 import com.fogok.dataobjects.transactions.clientserver.AuthTransaction;
 import com.fogok.dataobjects.transactions.serverclient.TokenTransaction;
 import com.fogok.dataobjects.transactions.utils.TransactionHelper;
-import com.fogok.spaceshipserver.baseservice.BaseActionFromTransaction;
+import com.fogok.dataobjects.transactions.actions.BaseActionFromTransaction;
 import com.fogok.spaceshipserver.utlis.ServerUtil;
 
 import io.netty.channel.Channel;
@@ -14,16 +14,17 @@ import static com.esotericsoftware.minlog.Log.warn;
 
 public class AuthAction implements BaseActionFromTransaction<AuthTransaction> {
 
+    private ChannelFutureListener afterSendToken = channelFuture -> channelFuture.channel().disconnect();
     private boolean isAuthComplete;
 
     @Override
     public ChannelFuture execute(Channel channel, AuthTransaction authTransaction, TransactionHelper transactionHelper) {
-        isAuthComplete = authTransaction.getLogin().equals("test1@test.com") && authTransaction.getPassword().equals("123456");
+        isAuthComplete = authTransaction.getLogin().equals("test1@test.com") && authTransaction.getPasswordEncrypted().equals("123456");
 
         if (isAuthComplete) {
             return transactionHelper.executeTransaction(channel,
-                    new TokenTransaction(ServerUtil.randomString(30)))
-                        .addListener((ChannelFutureListener) channelFuture -> channelFuture.channel().disconnect());
+                    new TokenTransaction(ServerUtil.randomString(30), "testNickname", "127.0.0.1:15502"));
+//                        .addListener(afterSendToken);
         } else {
             warn(String.format("AuthAction: Client %s sent bad auth data: %s", channel.remoteAddress(), authTransaction.toString()));
             return channel.disconnect();
@@ -32,11 +33,11 @@ public class AuthAction implements BaseActionFromTransaction<AuthTransaction> {
 
     @Override
     public boolean isNeedActionAfterExecution() {
-        return isAuthComplete;
+        return false;
     }
 
     @Override
     public void actionAfterExecution(ChannelFuture channelFuture) {
-        channelFuture.channel().disconnect();
+//        channelFuture.channel().disconnect();
     }
 }

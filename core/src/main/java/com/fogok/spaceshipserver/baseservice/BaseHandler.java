@@ -1,5 +1,6 @@
 package com.fogok.spaceshipserver.baseservice;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -23,7 +24,7 @@ public abstract class BaseHandler<T extends BaseServiceLogic> extends ChannelInb
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        serviceLogic.clientHandle(ctx.channel(), msg);
+        serviceLogic.clientHandle(ctx.channel(), (ByteBuf) msg);
     }
 
 }

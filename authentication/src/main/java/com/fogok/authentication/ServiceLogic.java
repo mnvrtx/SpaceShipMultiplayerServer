@@ -6,6 +6,7 @@ import com.fogok.dataobjects.datastates.ConnectionToServiceType;
 import com.fogok.dataobjects.transactions.BaseTransaction;
 import com.fogok.spaceshipserver.baseservice.BaseServiceLogic;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
 import static com.esotericsoftware.minlog.Log.info;
@@ -27,12 +28,8 @@ public class ServiceLogic extends BaseServiceLogic {
     }
 
     @Override
-    public void clientHandle(Channel channel, Object msg) {
-        transactionExecutor.execute(channel, msg);
-
-
-//        //TODO: все действия на ченнелы нужно вывести в одельный асинхронный поток! Нужно изучить это и понять как сделать. Либо делать
-//        //это флагом, либо автоматом все это будет делаться
+    public void clientHandle(Channel channel, ByteBuf byteBuf) {
+        transactionExecutor.execute(channel, byteBuf);
     }
 
     @Override
