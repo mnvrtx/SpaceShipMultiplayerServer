@@ -15,12 +15,16 @@ public abstract class BaseExceptionHandler extends ChannelDuplexHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        if (cause instanceof IOException)
+        if (cause instanceof IOException) {
             info(String.format("Force off connect: ", cause.getMessage().split("[\\r\\n]+")[1]));
-        else
+            forceOffDisconnect(cause);
+        } else {
             error("Unhandled exception in server: ", cause);
+        }
         ctx.close();
     }
+
+    public abstract void forceOffDisconnect(Throwable cause);
 
     @Override
     public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {

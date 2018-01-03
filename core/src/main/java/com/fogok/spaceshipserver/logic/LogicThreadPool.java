@@ -166,9 +166,9 @@ public class LogicThreadPool implements LogicThreadPoolBase{
                 }
 
                 break;
-            case KEEP_ALIVE:
-
-                break;
+//            case KEEP_ALIVE:
+//
+//                break;
             case PLAYER_DATA_WITH_CONSOLE_STATE:
 
                 break;

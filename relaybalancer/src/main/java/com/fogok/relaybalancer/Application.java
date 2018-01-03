@@ -1,5 +1,6 @@
 package com.fogok.relaybalancer;
 
+import com.fogok.spaceshipserver.baseservice.SimpleExceptionHandler;
 import com.fogok.spaceshipserver.utlis.CLIArgs;
 import com.fogok.spaceshipserver.utlis.ServiceStarter;
 
@@ -22,20 +23,18 @@ public class Application {
 
     private void startAuthService(String[] args) throws IOException {
         setCliArgs(args);
-        startServiceForAuthentication();
+        startServiceForAllClients();
     }
 
     private void setCliArgs(String[] args){
         cliArgs = ServiceStarter.getInstance().readCLI(args);
     }
 
-    private void startServiceForAuthentication() throws IOException {
+    private void startServiceForAllClients() throws IOException {
+        ServiceStarter.getInstance().createLog(cliArgs);
         ServiceStarter.getInstance().startService(cliArgs,
-                RelayHandler.class, ExceptionHandler.class, false);
+                RelayHandler.class, SimpleExceptionHandler.class, true);
     }
 
-    private void startConnectionToSocialServers(){
-
-    }
 
 }

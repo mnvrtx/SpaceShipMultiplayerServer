@@ -1,5 +1,6 @@
 package com.fogok.authentication;
 
+import com.fogok.spaceshipserver.baseservice.SimpleExceptionHandler;
 import com.fogok.spaceshipserver.utlis.CLIArgs;
 import com.fogok.spaceshipserver.utlis.ServiceStarter;
 
@@ -14,7 +15,6 @@ public class Application {
     }
     //endregion
 
-    private ServiceLogic serviceLogic;
     private CLIArgs cliArgs;
 
     public static void main(String[] args) throws IOException {
@@ -32,12 +32,8 @@ public class Application {
 
     private void startServiceForAllClients() throws IOException {
         ServiceStarter.getInstance().createLog(cliArgs);
-        serviceLogic = new ServiceLogic();
         ServiceStarter.getInstance().startService(cliArgs,
-                Handler.class, ExceptionHandler.class, true);
+                AuthHandler.class, SimpleExceptionHandler.class, true);
     }
 
-    public ServiceLogic getServiceLogic() {
-        return serviceLogic;
-    }
 }
