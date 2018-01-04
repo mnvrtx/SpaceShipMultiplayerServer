@@ -3,6 +3,7 @@
 !.idea/runConfigurations/
 /.gradle
 /logs
+/configs
 local.properties
 local.dependencies
 *.iml

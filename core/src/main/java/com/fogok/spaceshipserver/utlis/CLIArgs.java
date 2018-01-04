@@ -22,8 +22,8 @@ public class CLIArgs {
     @Parameter(names = "-debug", description = "Debug mode")
     public Boolean debug = false;
 
-    @Parameter(names = "-port", description = "Server port")
-    public Integer port = 15505;
+    @Parameter(names = "-configPath", description = "Config Path")
+    public String configPath = "configs";
 
     @Parameter(names = "-name", description = "Service name")
     public String serviceName = "unnamedService";

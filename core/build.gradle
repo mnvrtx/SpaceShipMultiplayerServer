@@ -20,4 +20,5 @@ dependencies{
     //endregion
 
     compile "com.beust:jcommander:1.71"
+    compile group: 'com.google.code.gson', name: 'gson', version: '1.7.2'
 }

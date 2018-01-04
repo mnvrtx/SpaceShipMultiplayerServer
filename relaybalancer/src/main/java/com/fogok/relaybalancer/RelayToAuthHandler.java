@@ -63,8 +63,4 @@ public class RelayToAuthHandler extends ChannelInboundHandlerAdapter {
     public Map<String, Channel> getClientsChannelsAndTokensRelations() {
         return clientsChannelsAndTokensRelations;
     }
-
-    public Channel getAuthServiceChannel() {
-        return authServiceChannel;
-    }
 }
