@@ -5,7 +5,6 @@ import com.fogok.io.Fgkio;
 import com.fogok.io.logging.Logging;
 import com.fogok.spaceshipserver.BaseChannelInboundHandlerAdapter;
 import com.fogok.spaceshipserver.config.BaseConfigModel;
-import com.fogok.spaceshipserver.config.CommonConfig;
 
 import java.io.IOException;
 
@@ -32,40 +31,34 @@ public class ServiceStarter {
     }
     //endregion
 
-    public static class ServiceParamsBuilder<T extends BaseChannelInboundHandlerAdapter, E extends ChannelDuplexHandler>{
+    public static class ServiceParamsBuilder<T extends BaseChannelInboundHandlerAdapter, S extends ChannelDuplexHandler>{
         private CLIArgs cliArgs;
-        private CommonConfig commonConfig;
-        private BaseConfigModel specificConfig;
+        private BaseConfigModel specificConfigWithCommonConfig;
         private Class<T> coreHandler;
-        private Class<E> exceptionHandler;
+        private Class<S> exceptionHandler;
         private boolean tcp = true;
 
-        public ServiceParamsBuilder<T, E> setCliArgs(CLIArgs cliArgs) {
+        public ServiceParamsBuilder<T, S> setCliArgs(CLIArgs cliArgs) {
             this.cliArgs = cliArgs;
             return this;
         }
 
-        public ServiceParamsBuilder<T, E> setCommonConfig(CommonConfig commonConfig) {
-            this.commonConfig = commonConfig;
+        public ServiceParamsBuilder<T, S> setConfigModel(BaseConfigModel specificConfigWithCommonConfig) {
+            this.specificConfigWithCommonConfig = specificConfigWithCommonConfig;
             return this;
         }
 
-        public ServiceParamsBuilder<T, E> setConfigModel(BaseConfigModel specificConfig) {
-            this.specificConfig = specificConfig;
-            return this;
-        }
-
-        public ServiceParamsBuilder<T, E> setCoreHandler(Class<T> coreHandler) {
+        public ServiceParamsBuilder<T, S> setCoreHandler(Class<T> coreHandler) {
             this.coreHandler = coreHandler;
             return this;
         }
 
-        public ServiceParamsBuilder<T, E> setExceptionHandler(Class<E> exceptionHandler) {
+        public ServiceParamsBuilder<T, S> setExceptionHandler(Class<S> exceptionHandler) {
             this.exceptionHandler = exceptionHandler;
             return this;
         }
 
-        public ServiceParamsBuilder<T, E> setTcp(boolean tcp) {
+        public ServiceParamsBuilder<T, S> setTcp(boolean tcp) {
             this.tcp = tcp;
             return this;
         }
@@ -82,17 +75,17 @@ public class ServiceStarter {
         Fgkio.logging.createLogSystem(new Logging.LogSystemParams().setAppName(cliArgs.serviceName).setLogLevel(cliArgs.logLevel).setDebug(cliArgs.debug).setLogToConsole(true));
     }
 
-    public <T extends BaseChannelInboundHandlerAdapter, E extends ChannelDuplexHandler> void startService(final ServiceParamsBuilder<T, E> serviceParamsBuilder)
+    public <T extends BaseChannelInboundHandlerAdapter, S extends ChannelDuplexHandler> void startService(final ServiceParamsBuilder<T, S> serviceParamsBuilder)
     {
 
         //region ErrorsCheck
-        if (serviceParamsBuilder.commonConfig == null) {
-            error("Common config is not defined");
+        if (serviceParamsBuilder.specificConfigWithCommonConfig == null) {
+            error("Specific config is not defined");
             return;
         }
 
-        if (serviceParamsBuilder.specificConfig == null) {
-            error("Specific config is not defined");
+        if (serviceParamsBuilder.specificConfigWithCommonConfig.getCommonConfig() == null) {
+            error("Common config is not defined");
             return;
         }
 
@@ -113,13 +106,13 @@ public class ServiceStarter {
 
         //endregion
 
-        final String overrideIp = serviceParamsBuilder.commonConfig.getParams().get("override_ip");
+        final String overrideIp = serviceParamsBuilder.specificConfigWithCommonConfig.getCommonConfig().getParams().get("override_ip");
         if (overrideIp == null) {
             error("Parameter 'port' is not defined in config");
             return;
         }
 
-        final String portStr = serviceParamsBuilder.specificConfig.getParams().get("port");
+        final String portStr = serviceParamsBuilder.specificConfigWithCommonConfig.getParams().get("port");
         if (portStr == null) {
             error("Parameter 'port' is not defined in config");
             return;
@@ -139,7 +132,7 @@ public class ServiceStarter {
                             ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
                             ch.pipeline().addLast(new LoggingHandler());
                             T coreHandler = serviceParamsBuilder.coreHandler.newInstance();
-                            coreHandler.init(serviceParamsBuilder.specificConfig);
+                            coreHandler.init(serviceParamsBuilder.specificConfigWithCommonConfig);
                             ch.pipeline().addLast(coreHandler);
                             ch.pipeline().addLast(serviceParamsBuilder.exceptionHandler.newInstance());
                         }

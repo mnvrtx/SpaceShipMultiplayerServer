@@ -19,7 +19,8 @@ public abstract class BaseConfigModel {
         return commonConfig;
     }
 
-    public void setCommonConfig(BaseConfigModel commonConfig) {
+    public BaseConfigModel setCommonConfig(BaseConfigModel commonConfig) {
         this.commonConfig = commonConfig;
+        return this;
     }
 }

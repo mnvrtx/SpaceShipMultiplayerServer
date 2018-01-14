@@ -10,13 +10,13 @@ import io.netty.channel.ChannelFuture;
 
 import static com.esotericsoftware.minlog.Log.*;
 
-public abstract class BaseConnectorInSvcToSvc<C extends BaseConfigModel, T extends BaseHandlerInSvcToSvc<C>, E extends BaseExceptionHandler> {
+public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S extends BaseHandlerInSvcToSvc<T>, U extends BaseExceptionHandler> {
 
     private boolean svcConnected;
-    private T svcToSvcHandler;
-    private Class<E> exceptionHandlerClass;
+    private S svcToSvcHandler;
+    private Class<U> exceptionHandlerClass;
 
-    public BaseConnectorInSvcToSvc(Class<T> svcToSvcHandler, Class<E> exceptionHandlerClass) {
+    public BaseConnectorInSvcToSvc(Class<S> svcToSvcHandler, Class<U> exceptionHandlerClass) {
         this.exceptionHandlerClass = exceptionHandlerClass;
         try {
             this.svcToSvcHandler = svcToSvcHandler.newInstance();
@@ -25,7 +25,7 @@ public abstract class BaseConnectorInSvcToSvc<C extends BaseConfigModel, T exten
         }
     }
 
-    public void connectServiceToService(ConnectToAuthServiceCallback connectToAuthServiceCallback, C config, String ip) throws InvalidPropertiesFormatException {
+    public void connectServiceToService(ConnectToAuthServiceCallback connectToAuthServiceCallback, T config, String ip) throws InvalidPropertiesFormatException {
         if (!svcConnected) {
             debug("connectServiceToService");
             ServerUtil.IPComponents ipComponents = ServerUtil.parseIpComponents(ip);
@@ -51,7 +51,7 @@ public abstract class BaseConnectorInSvcToSvc<C extends BaseConfigModel, T exten
         return svcConnected;
     }
 
-    public T getSvcToSvcHandler() {
+    public S getSvcToSvcHandler() {
         return svcToSvcHandler;
     }
 
