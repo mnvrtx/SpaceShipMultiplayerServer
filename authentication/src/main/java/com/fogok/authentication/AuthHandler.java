@@ -11,7 +11,6 @@ import com.fogok.spaceshipserver.baseservice.SimpleTransactionReader;
 import com.fogok.spaceshipserver.transactions.ApprObjResolverClientServerImpl;
 import com.fogok.spaceshipserver.transactions.ServiceToServiceDataState;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
 import static com.esotericsoftware.minlog.Log.info;
@@ -20,11 +19,12 @@ public class AuthHandler extends BaseChannelInboundHandlerAdapter<AuthConfig> {
 
     private SimpleTransactionReader transactionReader = new SimpleTransactionReader();
 
-    public AuthHandler(){
+    public void init(AuthConfig authConfig) {
+        setConfig(authConfig);
         transactionReader.getTransactionExecutor().setAlternativeTrResolver(ApprObjResolverClientServerImpl.getInstance());
         transactionReader.getTransactionsAndReadersResolver()
                 .addToResolve(
-                        new AuthReader(),
+                        new AuthReader(getConfig()),
                         new BaseTransaction(ConnectionToServiceType.CLIENT_TO_SERVICE, ClientToServerDataStates.CONNECT_TO_SERVER.ordinal()))
                 .addToResolve(
                         new ValidTokenReader(),
@@ -38,7 +38,7 @@ public class AuthHandler extends BaseChannelInboundHandlerAdapter<AuthConfig> {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        transactionReader.readByteBufFromChannel(ctx.channel(), (ByteBuf) msg);
+        executorToThreadPool.execute(transactionReader, ctx.channel(), msg);
     }
 
     @Override

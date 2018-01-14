@@ -82,8 +82,10 @@ public class ServiceStarter {
         Fgkio.logging.createLogSystem(new Logging.LogSystemParams().setAppName(cliArgs.serviceName).setLogLevel(cliArgs.logLevel).setDebug(cliArgs.debug).setLogToConsole(true));
     }
 
-    public <T extends BaseChannelInboundHandlerAdapter, E extends ChannelDuplexHandler> void startService(final ServiceParamsBuilder<T, E> serviceParamsBuilder) throws IOException
+    public <T extends BaseChannelInboundHandlerAdapter, E extends ChannelDuplexHandler> void startService(final ServiceParamsBuilder<T, E> serviceParamsBuilder)
     {
+
+        //region ErrorsCheck
         if (serviceParamsBuilder.commonConfig == null) {
             error("Common config is not defined");
             return;
@@ -108,6 +110,8 @@ public class ServiceStarter {
             error("CliArgs is not defined");
             return;
         }
+
+        //endregion
 
         final String overrideIp = serviceParamsBuilder.commonConfig.getParams().get("override_ip");
         if (overrideIp == null) {
@@ -134,9 +138,9 @@ public class ServiceStarter {
                         public void initChannel(SocketChannel ch) throws Exception {
                             ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
                             ch.pipeline().addLast(new LoggingHandler());
-                            T mainHandler = serviceParamsBuilder.coreHandler.newInstance();
-                            mainHandler.setConfigModel(serviceParamsBuilder.specificConfig);
-                            ch.pipeline().addLast(mainHandler);
+                            T coreHandler = serviceParamsBuilder.coreHandler.newInstance();
+                            coreHandler.init(serviceParamsBuilder.specificConfig);
+                            ch.pipeline().addLast(coreHandler);
                             ch.pipeline().addLast(serviceParamsBuilder.exceptionHandler.newInstance());
                         }
                     });

@@ -1,18 +1,22 @@
 package com.fogok.spaceshipserver;
 
 import com.fogok.spaceshipserver.config.BaseConfigModel;
+import com.fogok.spaceshipserver.utlis.ExecutorToThreadPool;
 
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public class BaseChannelInboundHandlerAdapter<T extends BaseConfigModel> extends ChannelInboundHandlerAdapter {
+public abstract class BaseChannelInboundHandlerAdapter<T extends BaseConfigModel> extends ChannelInboundHandlerAdapter {
 
-    protected T configModel;
+    protected ExecutorToThreadPool executorToThreadPool = new ExecutorToThreadPool();
+    protected T config;
 
-    public void setConfigModel(T configModel) {
-        this.configModel = configModel;
+    public abstract void init(T config);
+
+    public void setConfig(T config) {
+        this.config = config;
     }
 
-    public T getConfigModel() {
-        return configModel;
+    public T getConfig() {
+        return config;
     }
 }

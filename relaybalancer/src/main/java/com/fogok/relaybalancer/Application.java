@@ -34,11 +34,11 @@ public class Application {
 
     private void startServiceForAllClients() throws IOException, InstantiationException, IllegalAccessException {
         ServiceStarter.getInstance().createLog(cliArgs);
-        ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<RelayHandler, SimpleExceptionHandler>()
+        ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<RelayClientHandler, SimpleExceptionHandler>()
                         .setCommonConfig(new CommonConfigReader(cliArgs).getConfig())
                         .setConfigModel(new RelayConfigReader(cliArgs).getConfig())
                         .setCliArgs(cliArgs)
-                        .setCoreHandler(RelayHandler.class)
+                        .setCoreHandler(RelayClientHandler.class)
                         .setExceptionHandler(SimpleExceptionHandler.class));
     }
 
