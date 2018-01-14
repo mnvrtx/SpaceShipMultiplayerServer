@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Build and run relaybalancer from idea" type="Application" factoryName="Application" activateToolWindowBeforeRun="false" singleton="true">
+  <configuration default="false" name="Build and run relaybalancer from idea" type="Application" factoryName="Application" singleton="true">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
     <option name="MAIN_CLASS_NAME" value="com.fogok.relaybalancer.Application" />
     <option name="VM_PARAMETERS" value="" />
-    <option name="PROGRAM_PARAMETERS" value="-log 2 -debug -name relay_balancer" />
+    <option name="PROGRAM_PARAMETERS" value="-log 3 -debug -name relay_balancer" />
     <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
     <option name="ALTERNATIVE_JRE_PATH" />

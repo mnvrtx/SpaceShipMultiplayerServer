@@ -1,11 +1,13 @@
-package com.fogok.relaybalancer;
+package com.fogok.relaybalancer.connectors;
 
 import com.fogok.dataobjects.datastates.ConnectionToServiceType;
 import com.fogok.dataobjects.transactions.common.BaseTransaction;
 import com.fogok.dataobjects.transactions.common.ConnectionInformationTransaction;
 import com.fogok.dataobjects.transactions.common.TokenToServiceTransaction;
 import com.fogok.dataobjects.transactions.relaybalancerservice.SSInformationTransaction;
+import com.fogok.relaybalancer.config.RelayConfig;
 import com.fogok.relaybalancer.readers.TokenFromAuthReader;
+import com.fogok.spaceshipserver.BaseChannelInboundHandlerAdapter;
 import com.fogok.spaceshipserver.baseservice.SimpleTransactionReader;
 import com.fogok.spaceshipserver.transactions.ApprObjResolverClientServerImpl;
 import com.fogok.spaceshipserver.transactions.CheckValidTokenToAuthTransaction;
@@ -17,11 +19,10 @@ import java.util.Map;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import static com.fogok.dataobjects.transactions.common.ConnectionInformationTransaction.RESPONSE_CODE_ERROR;
 
-public class RelayToAuthHandler extends ChannelInboundHandlerAdapter {
+public class RelayToAuthHandler extends BaseChannelInboundHandlerAdapter<RelayConfig> {
 
     private Map<String, Channel> clientsChannelsAndTokensRelations = new HashMap<>(/**TODO: max connections this, add to config file*/);
 
@@ -40,12 +41,12 @@ public class RelayToAuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         authServiceChannel = ctx.channel();
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
         transactionReader.readByteBufFromChannel(ctx.channel(), (ByteBuf) msg);
     }
 
@@ -56,7 +57,7 @@ public class RelayToAuthHandler extends ChannelInboundHandlerAdapter {
 
     public void receiveAuthResponse(Channel clientChannel, boolean isValid){
         transactionReader.getTransactionExecutor().execute(clientChannel,
-                isValid ? new SSInformationTransaction("127.0.0.1:15503")
+                isValid ? new SSInformationTransaction(configModel.getAuthServiceIp())
                         : new ConnectionInformationTransaction(RESPONSE_CODE_ERROR));
     }
 

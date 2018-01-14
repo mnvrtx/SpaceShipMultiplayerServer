@@ -1,7 +1,11 @@
-package com.fogok.relaybalancer;
+package com.fogok.relaybalancer.connectors;
 
 import com.fogok.dataobjects.ConnectToServiceImpl;
+import com.fogok.relaybalancer.config.RelayConfig;
 import com.fogok.spaceshipserver.baseservice.SimpleExceptionHandler;
+import com.fogok.spaceshipserver.utlis.ServerUtil;
+
+import java.util.InvalidPropertiesFormatException;
 
 import static com.esotericsoftware.minlog.Log.debug;
 
@@ -22,12 +26,13 @@ public class ConnectorToAuthService {
         toAuthServiceConnected = false;
     }
 
-    public void connectToAuthService(ConnectToAuthServiceCallback connectToAuthServiceCallback){
+    public void connectToAuthService(ConnectToAuthServiceCallback connectToAuthServiceCallback, RelayConfig config) throws InvalidPropertiesFormatException {
         debug("connectToAuthService");
-        ConnectToServiceImpl.getInstance().isThreadOnly = false;
+        ServerUtil.IPComponents ipComponents = ServerUtil.parseIpComponents(config.getAuthServiceIp());
+        relayToAuthHandler.setConfigModel(config);
         ConnectToServiceImpl.getInstance().connect(relayToAuthHandler, new SimpleExceptionHandler(),
-                cause -> connectToAuthServiceCallback.except("127.0.0.1:15501"), //TODO: add opportunity configure this and other internet protocols
-                channelFuture -> connectToAuthServiceCallback.success(), "127.0.0.1", 15501);
+                cause -> connectToAuthServiceCallback.except(relayToAuthHandler.getConfigModel().getAuthServiceIp()),
+                channelFuture -> connectToAuthServiceCallback.success(), ipComponents.getIp(), ipComponents.getPort());
     }
 
     public boolean isToAuthServiceConnected() {

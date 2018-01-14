@@ -1,8 +1,8 @@
 package com.fogok.authentication;
 
-import com.fogok.authentication.config.AuthConfig;
 import com.fogok.authentication.config.AuthConfigReader;
 import com.fogok.spaceshipserver.baseservice.SimpleExceptionHandler;
+import com.fogok.spaceshipserver.config.CommonConfigReader;
 import com.fogok.spaceshipserver.utlis.CLIArgs;
 import com.fogok.spaceshipserver.utlis.ServiceStarter;
 
@@ -18,7 +18,6 @@ public class Application {
     //endregion
 
     private CLIArgs cliArgs;
-    private AuthConfig authConfig;
 
     public static void main(String[] args) throws IOException, InstantiationException, IllegalAccessException {
         getInstance().startAuthService(args);
@@ -35,9 +34,9 @@ public class Application {
 
     private void startServiceForAllClients() throws IOException, InstantiationException, IllegalAccessException {
         ServiceStarter.getInstance().createLog(cliArgs);
-        authConfig = (AuthConfig) new AuthConfigReader(cliArgs).getConfig();
         ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<AuthHandler, SimpleExceptionHandler>()
-                        .setConfigModel(authConfig)
+                        .setCommonConfig(new CommonConfigReader(cliArgs).getConfig())
+                        .setConfigModel(new AuthConfigReader(cliArgs).getConfig())
                         .setCliArgs(cliArgs)
                         .setCoreHandler(AuthHandler.class)
                         .setExceptionHandler(SimpleExceptionHandler.class));

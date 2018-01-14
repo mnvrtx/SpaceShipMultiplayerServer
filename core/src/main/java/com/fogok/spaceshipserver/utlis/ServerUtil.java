@@ -1,6 +1,7 @@
 package com.fogok.spaceshipserver.utlis;
 
 import java.security.SecureRandom;
+import java.util.InvalidPropertiesFormatException;
 
 public class ServerUtil {
 
@@ -14,4 +15,30 @@ public class ServerUtil {
         return sb.toString();
     }
 
+
+    public static class IPComponents{
+        private String ip;
+        private int port;
+
+        public IPComponents(String ip, int port) {
+            this.ip = ip;
+            this.port = port;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public String getIp() {
+            return ip;
+        }
+    }
+
+    public static IPComponents parseIpComponents(String fullIp) throws InvalidPropertiesFormatException {
+
+        String[] rawComponentsIp = fullIp.split(":");
+        if (rawComponentsIp.length != 2)
+            throw new InvalidPropertiesFormatException("Invalid ip");
+        return new IPComponents(rawComponentsIp[0], Integer.parseInt(rawComponentsIp[1]));
+    }
 }

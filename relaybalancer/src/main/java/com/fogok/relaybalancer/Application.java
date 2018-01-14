@@ -1,8 +1,8 @@
 package com.fogok.relaybalancer;
 
-import com.fogok.relaybalancer.config.RelayConfig;
 import com.fogok.relaybalancer.config.RelayConfigReader;
 import com.fogok.spaceshipserver.baseservice.SimpleExceptionHandler;
+import com.fogok.spaceshipserver.config.CommonConfigReader;
 import com.fogok.spaceshipserver.utlis.CLIArgs;
 import com.fogok.spaceshipserver.utlis.ServiceStarter;
 
@@ -18,7 +18,6 @@ public class Application {
     //endregion
 
     private CLIArgs cliArgs;
-    private RelayConfig relayConfig;
 
     public static void main(String[] args) throws IOException, InstantiationException, IllegalAccessException {
         getInstance().startAuthService(args);
@@ -35,9 +34,9 @@ public class Application {
 
     private void startServiceForAllClients() throws IOException, InstantiationException, IllegalAccessException {
         ServiceStarter.getInstance().createLog(cliArgs);
-        relayConfig = (RelayConfig) new RelayConfigReader(cliArgs).getConfig();
         ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<RelayHandler, SimpleExceptionHandler>()
-                        .setConfigModel(relayConfig)
+                        .setCommonConfig(new CommonConfigReader(cliArgs).getConfig())
+                        .setConfigModel(new RelayConfigReader(cliArgs).getConfig())
                         .setCliArgs(cliArgs)
                         .setCoreHandler(RelayHandler.class)
                         .setExceptionHandler(SimpleExceptionHandler.class));

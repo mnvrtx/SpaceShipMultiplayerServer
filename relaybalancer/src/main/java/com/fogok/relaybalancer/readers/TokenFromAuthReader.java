@@ -2,7 +2,7 @@ package com.fogok.relaybalancer.readers;
 
 import com.fogok.dataobjects.transactions.BaseReaderFromTransaction;
 import com.fogok.dataobjects.transactions.utils.TransactionExecutor;
-import com.fogok.relaybalancer.RelayToAuthHandler;
+import com.fogok.relaybalancer.connectors.RelayToAuthHandler;
 import com.fogok.spaceshipserver.transactions.CheckValidTokenFromAuthTransaction;
 
 import io.netty.channel.Channel;

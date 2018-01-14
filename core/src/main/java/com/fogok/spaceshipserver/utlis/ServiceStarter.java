@@ -3,14 +3,15 @@ package com.fogok.spaceshipserver.utlis;
 import com.beust.jcommander.JCommander;
 import com.fogok.io.Fgkio;
 import com.fogok.io.logging.Logging;
+import com.fogok.spaceshipserver.BaseChannelInboundHandlerAdapter;
 import com.fogok.spaceshipserver.config.BaseConfigModel;
+import com.fogok.spaceshipserver.config.CommonConfig;
 
 import java.io.IOException;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.FixedRecvByteBufAllocator;
@@ -31,9 +32,10 @@ public class ServiceStarter {
     }
     //endregion
 
-    public static class ServiceParamsBuilder<T extends ChannelInboundHandlerAdapter, E extends ChannelDuplexHandler>{
+    public static class ServiceParamsBuilder<T extends BaseChannelInboundHandlerAdapter, E extends ChannelDuplexHandler>{
         private CLIArgs cliArgs;
-        private BaseConfigModel baseConfigModel;
+        private CommonConfig commonConfig;
+        private BaseConfigModel specificConfig;
         private Class<T> coreHandler;
         private Class<E> exceptionHandler;
         private boolean tcp = true;
@@ -43,8 +45,13 @@ public class ServiceStarter {
             return this;
         }
 
-        public ServiceParamsBuilder<T, E> setConfigModel(BaseConfigModel baseConfigModel) {
-            this.baseConfigModel = baseConfigModel;
+        public ServiceParamsBuilder<T, E> setCommonConfig(CommonConfig commonConfig) {
+            this.commonConfig = commonConfig;
+            return this;
+        }
+
+        public ServiceParamsBuilder<T, E> setConfigModel(BaseConfigModel specificConfig) {
+            this.specificConfig = specificConfig;
             return this;
         }
 
@@ -75,10 +82,15 @@ public class ServiceStarter {
         Fgkio.logging.createLogSystem(new Logging.LogSystemParams().setAppName(cliArgs.serviceName).setLogLevel(cliArgs.logLevel).setDebug(cliArgs.debug).setLogToConsole(true));
     }
 
-    public <T extends ChannelInboundHandlerAdapter, E extends ChannelDuplexHandler> void startService(final ServiceParamsBuilder<T, E> serviceParamsBuilder) throws IOException
+    public <T extends BaseChannelInboundHandlerAdapter, E extends ChannelDuplexHandler> void startService(final ServiceParamsBuilder<T, E> serviceParamsBuilder) throws IOException
     {
-        if (serviceParamsBuilder.baseConfigModel == null) {
-            error("Config is not defined");
+        if (serviceParamsBuilder.commonConfig == null) {
+            error("Common config is not defined");
+            return;
+        }
+
+        if (serviceParamsBuilder.specificConfig == null) {
+            error("Specific config is not defined");
             return;
         }
 
@@ -97,7 +109,13 @@ public class ServiceStarter {
             return;
         }
 
-        final String portStr = serviceParamsBuilder.baseConfigModel.getParams().get("port");
+        final String overrideIp = serviceParamsBuilder.commonConfig.getParams().get("override_ip");
+        if (overrideIp == null) {
+            error("Parameter 'port' is not defined in config");
+            return;
+        }
+
+        final String portStr = serviceParamsBuilder.specificConfig.getParams().get("port");
         if (portStr == null) {
             error("Parameter 'port' is not defined in config");
             return;
@@ -116,17 +134,19 @@ public class ServiceStarter {
                         public void initChannel(SocketChannel ch) throws Exception {
                             ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
                             ch.pipeline().addLast(new LoggingHandler());
-                            ch.pipeline().addLast(serviceParamsBuilder.coreHandler.newInstance());
+                            T mainHandler = serviceParamsBuilder.coreHandler.newInstance();
+                            mainHandler.setConfigModel(serviceParamsBuilder.specificConfig);
+                            ch.pipeline().addLast(mainHandler);
                             ch.pipeline().addLast(serviceParamsBuilder.exceptionHandler.newInstance());
                         }
                     });
 
 
-            ChannelFuture future = boot.bind(port).sync();
-            info(String.format("Start service %s success with %s port!", serviceParamsBuilder.cliArgs.serviceName, port));
+            ChannelFuture future = boot.bind(overrideIp, port).sync();
+            info(String.format("Start service %s success with %s !", serviceParamsBuilder.cliArgs.serviceName, future.channel().localAddress()));
             future.channel().closeFuture().sync();
         } catch (Exception e) {
-            error(String.format("Error start service %s with %s port!", serviceParamsBuilder.cliArgs.serviceName, port), e);
+            error(String.format("Error start service %s !", serviceParamsBuilder.cliArgs.serviceName), e);
         } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();

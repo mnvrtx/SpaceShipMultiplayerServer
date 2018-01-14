@@ -42,7 +42,7 @@ public abstract class BaseConfigReader<T extends BaseConfigModel> {
         writer.close();
     }
 
-    public BaseConfigModel getConfig(){
+    public T getConfig(){
         return configModel;
     }
 }

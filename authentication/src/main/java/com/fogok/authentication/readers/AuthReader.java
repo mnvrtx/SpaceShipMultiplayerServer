@@ -19,7 +19,7 @@ public class AuthReader implements BaseReaderFromTransaction<AuthTransaction> {
 
         if (isAuthComplete) {
             return transactionExecutor.execute(channel,
-                    new TokenToClientTransaction(ServerUtil.randomString(30), "testNickname", "127.0.0.1:15502"));
+                    new TokenToClientTransaction(ServerUtil.randomString(30), "testNickname", "192.168.1.100:15502"));
         } else {
             warn(String.format("AuthAction: Client %s sent bad auth data: %s", channel.remoteAddress(), authTransaction.toString()));
             return channel.disconnect();
