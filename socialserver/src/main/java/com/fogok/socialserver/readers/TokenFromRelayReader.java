@@ -11,6 +11,7 @@ import io.netty.channel.ChannelFuture;
 public class TokenFromRelayReader implements BaseReaderFromTransaction<CheckValidTokenFromAuthTransaction> {
 
     private SocToRelayHandler socToRelayHandler;
+    private boolean isValidToken;
 
     public TokenFromRelayReader(SocToRelayHandler socToRelayHandler) {
         this.socToRelayHandler = socToRelayHandler;
@@ -18,17 +19,21 @@ public class TokenFromRelayReader implements BaseReaderFromTransaction<CheckVali
 
     @Override
     public ChannelFuture read(Channel channel, CheckValidTokenFromAuthTransaction transaction, TransactionExecutor transactionExecutor) {
-        Channel clientChannel = socToRelayHandler.getClientsChannelsAndTokensRelations().get(transaction.getToken());
-        return socToRelayHandler.receiveRelayResponse(clientChannel, transaction.isValid());
+        Channel clientChannel = socToRelayHandler.getClientsChannelsAndTokensRelations().remove(transaction.getToken());
+        isValidToken = transaction.isValid();
+        return socToRelayHandler.receiveRelayResponse(clientChannel, isValidToken);
     }
 
     @Override
     public boolean isNeedActionAfterRead() {
-        return true;
+        return !isValidToken;
     }
 
+    /**
+     * Отваливаем клиента - если неправильный токен
+     */
     @Override
     public void actionAfterRead(ChannelFuture channelFuture) {
-        socToRelayHandler.getClientsChannelsAndTokensRelations().remove(channelFuture.channel());
+        channelFuture.channel().close();
     }
 }

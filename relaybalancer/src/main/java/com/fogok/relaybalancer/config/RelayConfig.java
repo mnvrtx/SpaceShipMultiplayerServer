@@ -15,6 +15,7 @@ public class RelayConfig extends BaseConfigModel {
     public void createDefaultConfigModel() {
         params.put("port", "15502");
         authServiceIp = "127.0.0.1:15501";
+        socialServerServicesIps.add("127.0.0.1:15503");
     }
 
     public List<String> getSocialServerServicesIps() {

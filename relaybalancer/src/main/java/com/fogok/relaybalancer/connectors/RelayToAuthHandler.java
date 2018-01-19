@@ -30,14 +30,14 @@ public class RelayToAuthHandler extends BaseHandlerInSvcToSvc<RelayConfig>{
         putRequest(clientChannel, transaction, validationSender);
     }
 
-    public void receiveAuthResponseToClient(Channel clientOrServiceChannel, boolean isValid, int validationSender) {
+    public void receiveAuthResponseToClient(Channel clientOrServiceChannel, boolean isValid, int validationSender, String token) {
         if (validationSender == CheckValidTokenToAuthTransaction.SENDER_CLIENT)
             transactionReader.getTransactionExecutor().execute(clientOrServiceChannel,
                     isValid ? new SSInformationTransaction(config.getSocialServerServicesIps().get(0))
                             : new ConnectionInformationTransaction(RESPONSE_CODE_ERROR));
         else
             transactionReader.getTransactionExecutor().execute(clientOrServiceChannel,
-                    new CheckValidTokenFromAuthTransaction("TO_SOC_SERVER", isValid,
+                    new CheckValidTokenFromAuthTransaction(token, isValid,
                             CheckValidTokenToAuthTransaction.SENDER_SERVICE));
     }
 }

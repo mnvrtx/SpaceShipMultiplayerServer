@@ -19,7 +19,7 @@ public class ValidResponseFromAuthReader implements BaseReaderFromTransaction<Ch
     @Override
     public ChannelFuture read(Channel channel, CheckValidTokenFromAuthTransaction transaction, TransactionExecutor transactionExecutor) {
         Channel clientChannel = relayToAuthHandler.getClientsChannelsAndTokensRelations().remove(transaction.getToken());
-        relayToAuthHandler.receiveAuthResponseToClient(clientChannel, transaction.isValid(), transaction.getValidationSender());
+        relayToAuthHandler.receiveAuthResponseToClient(clientChannel, transaction.isValid(), transaction.getValidationSender(), transaction.getToken());
         return null;
     }
 
