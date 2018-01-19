@@ -7,7 +7,6 @@ import com.fogok.dataobjects.transactions.common.ConnectionInformationTransactio
 import com.fogok.relaybalancer.config.RelayConfig;
 import com.fogok.relaybalancer.connectors.ConnectorToAuthService;
 import com.fogok.relaybalancer.connectors.RelayToAuthHandler;
-import com.fogok.relaybalancer.readers.KeepAliveFromSocSrvReader;
 import com.fogok.relaybalancer.readers.TokenFromClientReader;
 import com.fogok.spaceshipserver.BaseChannelInboundHandlerAdapter;
 import com.fogok.spaceshipserver.baseservice.SimpleTransactionReader;
@@ -33,10 +32,7 @@ public class RelayClientHandler extends BaseChannelInboundHandlerAdapter<RelayCo
         transactionReader.getTransactionsAndReadersResolver()
                 .addToResolve(
                     new TokenFromClientReader(relayToAuthHandler),
-                    new BaseTransaction(ConnectionToServiceType.CLIENT_TO_SERVICE, ClientToServerDataStates.TOKEN_WITH_ADDITIONAL_INFORMATION.ordinal()))
-                .addToResolve(
-                    new KeepAliveFromSocSrvReader(relayToAuthHandler),
-                    new BaseTransaction(ConnectionToServiceType.CLIENT_TO_SERVICE, ClientToServerDataStates.KEEP_ALIVE_TO_SOC_SERV.ordinal()));
+                    new BaseTransaction(ConnectionToServiceType.CLIENT_TO_SERVICE, ClientToServerDataStates.TOKEN_WITH_ADDITIONAL_INFORMATION.ordinal()));
     }
 
     @Override

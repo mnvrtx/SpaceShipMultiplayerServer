@@ -27,7 +27,7 @@ public class CheckValidTokenToAuthTransaction extends TokenizedTransaction {
 
     @Override
     public String toString() {
-        return String.format(super.toString() + ", ValidationSender: '%s'", getToken(), getValidationSender() == 0 ? "SENDER_CLIENT" : "SENDER_SERVICE");
+        return String.format(super.toString() + ", ValidationSender: '%s'", getValidationSender() == 0 ? "SENDER_CLIENT" : "SENDER_SERVICE");
     }
 
     @Override

@@ -6,7 +6,7 @@ import com.fogok.dataobjects.transactions.common.BaseTransaction;
 import com.fogok.dataobjects.transactions.common.ConnectionInformationTransaction;
 import com.fogok.socialserver.config.SocSrvConfig;
 import com.fogok.socialserver.connectors.ConnectorToRelayService;
-import com.fogok.socialserver.readers.KeepAliveFromClientReader;
+import com.fogok.socialserver.readers.TokenFromClientReader;
 import com.fogok.spaceshipserver.BaseChannelInboundHandlerAdapter;
 import com.fogok.spaceshipserver.baseservice.SimpleTransactionReader;
 import com.fogok.spaceshipserver.utlis.BaseConnectorInSvcToSvc;
@@ -29,8 +29,8 @@ public class SocSrvHandler extends BaseChannelInboundHandlerAdapter<SocSrvConfig
     public void init() {
         transactionReader.getTransactionsAndReadersResolver()
                 .addToResolve(
-                    new KeepAliveFromClientReader(ConnectorToRelayService.getInstance().getSvcToSvcHandler()),
-                    new BaseTransaction(ConnectionToServiceType.CLIENT_TO_SERVICE, ClientToServerDataStates.KEEP_ALIVE_TO_SOC_SERV.ordinal()));
+                    new TokenFromClientReader(ConnectorToRelayService.getInstance().getSvcToSvcHandler()),
+                    new BaseTransaction(ConnectionToServiceType.CLIENT_TO_SERVICE, ClientToServerDataStates.TOKEN_WITH_ADDITIONAL_INFORMATION.ordinal()));
     }
 
     @Override
@@ -78,7 +78,7 @@ public class SocSrvHandler extends BaseChannelInboundHandlerAdapter<SocSrvConfig
     }
 
     /**
-     * Читаем что присылает клиент. Должен прислать KeepAliveTransaction
+     * Читаем что присылает клиент. Должен прислать TokenToServiceTransaction
      */
     private void syncClientChannelReadImpl(Channel clientChannel, Object msg){
         executorToThreadPool.execute(transactionReader, clientChannel, msg);

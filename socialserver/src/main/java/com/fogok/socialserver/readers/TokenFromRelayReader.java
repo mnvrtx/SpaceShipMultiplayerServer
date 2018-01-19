@@ -18,18 +18,17 @@ public class TokenFromRelayReader implements BaseReaderFromTransaction<CheckVali
 
     @Override
     public ChannelFuture read(Channel channel, CheckValidTokenFromAuthTransaction transaction, TransactionExecutor transactionExecutor) {
-        Channel clientChannel = socToRelayHandler.getClientsChannelsAndTokensRelations().remove(transaction.getToken());
-        socToRelayHandler.receiveRelayResponse(clientChannel, transaction.isValid());
-        return null;
+        Channel clientChannel = socToRelayHandler.getClientsChannelsAndTokensRelations().get(transaction.getToken());
+        return socToRelayHandler.receiveRelayResponse(clientChannel, transaction.isValid());
     }
 
     @Override
     public boolean isNeedActionAfterRead() {
-        return false;
+        return true;
     }
 
     @Override
     public void actionAfterRead(ChannelFuture channelFuture) {
-
+        socToRelayHandler.getClientsChannelsAndTokensRelations().remove(channelFuture.channel());
     }
 }
