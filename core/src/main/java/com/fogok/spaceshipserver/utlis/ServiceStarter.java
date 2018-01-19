@@ -108,7 +108,7 @@ public class ServiceStarter {
 
         final String overrideIp = serviceParamsBuilder.specificConfigWithCommonConfig.getCommonConfig().getParams().get("override_ip");
         if (overrideIp == null) {
-            error("Parameter 'port' is not defined in config");
+            error("Parameter 'overrideIp' is not defined in config");
             return;
         }
 

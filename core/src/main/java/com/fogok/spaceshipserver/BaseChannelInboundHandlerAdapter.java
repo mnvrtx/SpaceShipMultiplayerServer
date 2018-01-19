@@ -10,7 +10,12 @@ public abstract class BaseChannelInboundHandlerAdapter<T extends BaseConfigModel
     protected ExecutorToThreadPool executorToThreadPool = new ExecutorToThreadPool();
     protected T config;
 
-    public abstract void init(T config);
+    public void init(T config){
+        setConfig(config);
+        init();
+    }
+
+    public abstract void init();
 
     public void setConfig(T config) {
         this.config = config;

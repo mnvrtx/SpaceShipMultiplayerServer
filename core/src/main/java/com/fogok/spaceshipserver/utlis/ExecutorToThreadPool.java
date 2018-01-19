@@ -10,11 +10,7 @@ import io.netty.channel.Channel;
 
 public class ExecutorToThreadPool {
 
-    ExecutorService service = Executors.newFixedThreadPool(4);     //вся эта параша выполняется асинхронно, так шо не боимся
-
-    public ExecutorToThreadPool() {
-
-    }
+    private ExecutorService service = Executors.newFixedThreadPool(4);     //вся эта параша выполняется асинхронно, так шо не боимся
 
     public void execute(final BaseTransactionReader transactionReader, final Channel channel, final Object msg){
         service.execute(() -> transactionReader.readByteBufFromChannel(channel, (ByteBuf) msg));
@@ -23,4 +19,5 @@ public class ExecutorToThreadPool {
     public ExecutorService getService() {
         return service;
     }
+
 }

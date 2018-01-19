@@ -7,6 +7,7 @@ import com.fogok.spaceshipserver.config.BaseConfigModel;
 import java.util.InvalidPropertiesFormatException;
 
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 
 import static com.esotericsoftware.minlog.Log.*;
 
@@ -25,7 +26,7 @@ public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S exten
         }
     }
 
-    public void connectServiceToService(ConnectToAuthServiceCallback connectToAuthServiceCallback, T config, String ip) throws InvalidPropertiesFormatException {
+    public void connectServiceToService(ConnectToServiceCallback connectToServiceCallback, T config, String ip) throws InvalidPropertiesFormatException {
         if (!svcConnected) {
             debug("connectServiceToService");
             ServerUtil.IPComponents ipComponents = ServerUtil.parseIpComponents(ip);
@@ -33,17 +34,18 @@ public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S exten
 
             try {
                 ConnectToServiceImpl.getInstance().connect(svcToSvcHandler, exceptionHandlerClass.newInstance(),
-                        cause -> connectToAuthServiceCallback.except(ip),
+                        cause -> connectToServiceCallback.except(ip),
                         channelFuture -> {
-                            connectToAuthServiceCallback.success(channelFuture);
+                            connectToServiceCallback.success(channelFuture);
                             svcConnected = true;
+                            channelFuture.channel().closeFuture().addListener((ChannelFutureListener) channelFuture1 -> svcConnected = false);
                         }, ipComponents.getIp(), ipComponents.getPort());
             } catch (InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         } else {
             error("There may be only one connections in svc to svc");
-            connectToAuthServiceCallback.except(ip);
+            connectToServiceCallback.except(ip);
         }
     }
 
@@ -55,7 +57,7 @@ public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S exten
         return svcToSvcHandler;
     }
 
-    public interface ConnectToAuthServiceCallback{
+    public interface ConnectToServiceCallback {
         void success(ChannelFuture channelFuture) throws InstantiationException, IllegalAccessException;
         void except(String ip);
     }

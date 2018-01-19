@@ -19,8 +19,7 @@ public class AuthHandler extends BaseChannelInboundHandlerAdapter<AuthConfig> {
 
     private SimpleTransactionReader transactionReader = new SimpleTransactionReader();
 
-    public void init(AuthConfig authConfig) {
-        setConfig(authConfig);
+    public void init() {
         transactionReader.getTransactionExecutor().setAlternativeTrResolver(ApprObjResolverClientServerImpl.getInstance());
         transactionReader.getTransactionsAndReadersResolver()
                 .addToResolve(

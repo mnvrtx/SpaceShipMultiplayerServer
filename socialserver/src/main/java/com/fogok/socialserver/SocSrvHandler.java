@@ -1,14 +1,12 @@
-package com.fogok.relaybalancer;
+package com.fogok.socialserver;
 
 import com.fogok.dataobjects.datastates.ClientToServerDataStates;
 import com.fogok.dataobjects.datastates.ConnectionToServiceType;
 import com.fogok.dataobjects.transactions.common.BaseTransaction;
 import com.fogok.dataobjects.transactions.common.ConnectionInformationTransaction;
-import com.fogok.relaybalancer.config.RelayConfig;
-import com.fogok.relaybalancer.connectors.ConnectorToAuthService;
-import com.fogok.relaybalancer.connectors.RelayToAuthHandler;
-import com.fogok.relaybalancer.readers.KeepAliveFromSocSrvReader;
-import com.fogok.relaybalancer.readers.TokenFromClientReader;
+import com.fogok.socialserver.config.SocSrvConfig;
+import com.fogok.socialserver.connectors.ConnectorToRelayService;
+import com.fogok.socialserver.readers.KeepAliveFromClientReader;
 import com.fogok.spaceshipserver.BaseChannelInboundHandlerAdapter;
 import com.fogok.spaceshipserver.baseservice.SimpleTransactionReader;
 import com.fogok.spaceshipserver.utlis.BaseConnectorInSvcToSvc;
@@ -23,34 +21,26 @@ import io.netty.channel.ChannelHandlerContext;
 import static com.esotericsoftware.minlog.Log.error;
 import static com.esotericsoftware.minlog.Log.info;
 
-public class RelayClientHandler extends BaseChannelInboundHandlerAdapter<RelayConfig> {
+public class SocSrvHandler extends BaseChannelInboundHandlerAdapter<SocSrvConfig> {
 
     private SimpleTransactionReader transactionReader = new SimpleTransactionReader();
 
     @Override
     public void init() {
-        RelayToAuthHandler relayToAuthHandler = ConnectorToAuthService.getInstance().getSvcToSvcHandler();
         transactionReader.getTransactionsAndReadersResolver()
                 .addToResolve(
-                    new TokenFromClientReader(relayToAuthHandler),
-                    new BaseTransaction(ConnectionToServiceType.CLIENT_TO_SERVICE, ClientToServerDataStates.TOKEN_WITH_ADDITIONAL_INFORMATION.ordinal()))
-                .addToResolve(
-                    new KeepAliveFromSocSrvReader(relayToAuthHandler),
+                    new KeepAliveFromClientReader(ConnectorToRelayService.getInstance().getSvcToSvcHandler()),
                     new BaseTransaction(ConnectionToServiceType.CLIENT_TO_SERVICE, ClientToServerDataStates.KEEP_ALIVE_TO_SOC_SERV.ordinal()));
     }
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
-        info(String.format("Client %s joined to %s service", ctx.channel().remoteAddress(), RelayClientHandler.class.getSimpleName()));
+        info(String.format("Client %s joined to %s service", ctx.channel().remoteAddress(), SocSrvHandler.class.getSimpleName()));
     }
 
-    /**
-     * При подключении клиента пытаемся приконнектится к сервису аутентификации, если не приконнекчены. Если не получается - отваливаем клиента.
-     * Если подключается - идём дальше в syncClientChannelReadImpl
-     */
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws InvalidPropertiesFormatException {
-        boolean isConnectedToRequiredServices = ConnectorToAuthService.getInstance().isSvcConnected();
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        boolean isConnectedToRequiredServices = ConnectorToRelayService.getInstance().isSvcConnected();
 
         if (!isConnectedToRequiredServices)
             syncConnectToRequiredServices(ctx, msg);
@@ -60,14 +50,14 @@ public class RelayClientHandler extends BaseChannelInboundHandlerAdapter<RelayCo
     }
 
     private void syncConnectToRequiredServices(ChannelHandlerContext ctx, Object msg) throws InvalidPropertiesFormatException {
-        connectToAuthService(ctx, msg);
+        connectToRelayService(ctx, msg);
     }
 
-    private void connectToAuthService(ChannelHandlerContext ctx, Object msg) throws InvalidPropertiesFormatException {
-        ConnectorToAuthService.getInstance().connectServiceToService(new BaseConnectorInSvcToSvc.ConnectToServiceCallback() {
+    private void connectToRelayService(ChannelHandlerContext ctx, Object msg) throws InvalidPropertiesFormatException {
+        ConnectorToRelayService.getInstance().connectServiceToService(new BaseConnectorInSvcToSvc.ConnectToServiceCallback() {
 
             /**
-             * Eсли приконнектились к сервису авторизации - начинаем его читать и делать с ним дела
+             * Eсли приконнектились к сервису реле - начинаем его читать и делать с ним дела
              */
             @Override
             public void success(ChannelFuture channelFuture) {
@@ -79,16 +69,16 @@ public class RelayClientHandler extends BaseChannelInboundHandlerAdapter<RelayCo
              */
             @Override
             public void except(String ip) {
-                error(String.format("Auth service is shutdown or ip is incorrect: %s", ip));
+                error(String.format("Relay service is shutdown or ip is incorrect: %s", ip));
                 transactionReader.getTransactionExecutor().execute(ctx.channel(),
                         new ConnectionInformationTransaction(ConnectionInformationTransaction.RESPONSE_CODE_SERVICE_SHUTDOWN))
                         .addListener((ChannelFutureListener) channelFuture -> channelFuture.channel().disconnect());
             }
-        }, getConfig(), getConfig().getAuthServiceIp());
+        }, getConfig(), getConfig().getRelayServiceIp());
     }
 
     /**
-     * Читаем что присылает клиент. Должен прислать TokenToServiceTransaction
+     * Читаем что присылает клиент. Должен прислать KeepAliveTransaction
      */
     private void syncClientChannelReadImpl(Channel clientChannel, Object msg){
         executorToThreadPool.execute(transactionReader, clientChannel, msg);
@@ -96,6 +86,6 @@ public class RelayClientHandler extends BaseChannelInboundHandlerAdapter<RelayCo
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) {
-        info(String.format("Client %s left in %s service", ctx.channel().remoteAddress(), RelayClientHandler.class.getSimpleName()));
+        info(String.format("Client %s left in %s service", ctx.channel().remoteAddress(), SocSrvHandler.class.getSimpleName()));
     }
 }

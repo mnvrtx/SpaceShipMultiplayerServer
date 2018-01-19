@@ -1,25 +1,25 @@
-package com.fogok.relaybalancer.readers;
+package com.fogok.socialserver.readers;
 
 import com.fogok.dataobjects.transactions.BaseReaderFromTransaction;
 import com.fogok.dataobjects.transactions.utils.TransactionExecutor;
-import com.fogok.relaybalancer.connectors.RelayToAuthHandler;
+import com.fogok.socialserver.connectors.SocToRelayHandler;
 import com.fogok.spaceshipserver.transactions.CheckValidTokenFromAuthTransaction;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 
-public class TokenFromAuthReader implements BaseReaderFromTransaction<CheckValidTokenFromAuthTransaction> {
+public class TokenFromRelayReader implements BaseReaderFromTransaction<CheckValidTokenFromAuthTransaction> {
 
-    private RelayToAuthHandler relayToAuthHandler;
+    private SocToRelayHandler socToRelayHandler;
 
-    public TokenFromAuthReader(RelayToAuthHandler relayToAuthHandler) {
-        this.relayToAuthHandler = relayToAuthHandler;
+    public TokenFromRelayReader(SocToRelayHandler socToRelayHandler) {
+        this.socToRelayHandler = socToRelayHandler;
     }
 
     @Override
     public ChannelFuture read(Channel channel, CheckValidTokenFromAuthTransaction transaction, TransactionExecutor transactionExecutor) {
-        Channel clientChannel = relayToAuthHandler.getClientsChannelsAndTokensRelations().remove(transaction.getToken());
-        relayToAuthHandler.receiveAuthResponse(clientChannel, transaction.isValid());
+        Channel clientChannel = socToRelayHandler.getClientsChannelsAndTokensRelations().remove(transaction.getToken());
+        socToRelayHandler.receiveRelayResponse(clientChannel, transaction.isValid());
         return null;
     }
 

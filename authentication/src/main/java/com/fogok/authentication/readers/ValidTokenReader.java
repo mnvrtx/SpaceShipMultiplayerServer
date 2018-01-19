@@ -12,7 +12,7 @@ public class ValidTokenReader implements BaseReaderFromTransaction<CheckValidTok
 
     @Override
     public ChannelFuture read(Channel serviceChannel, CheckValidTokenToAuthTransaction transaction, TransactionExecutor transactionExecutor) {
-        transactionExecutor.execute(serviceChannel, new CheckValidTokenFromAuthTransaction(transaction.getToken(), true));
+        transactionExecutor.execute(serviceChannel, new CheckValidTokenFromAuthTransaction(transaction.getToken(), true, transaction.getValidationSender()));
         return null;
     }
 
