@@ -25,10 +25,11 @@ import static com.esotericsoftware.minlog.Log.info;
 public class RelayClientHandler extends BaseChannelInboundHandlerAdapter<RelayConfig> {
 
     private SimpleTransactionReader transactionReader = new SimpleTransactionReader();
+    private ConnectorToAuthService connectorToAuthService = new ConnectorToAuthService();
 
     @Override
     public void init() {
-        RelayToAuthHandler relayToAuthHandler = ConnectorToAuthService.getInstance().getSvcToSvcHandler();
+        RelayToAuthHandler relayToAuthHandler = connectorToAuthService.getSvcToSvcHandler();
         transactionReader.getTransactionsAndReadersResolver()
                 .addToResolve(
                     new TokenFromClientReader(relayToAuthHandler),
@@ -46,7 +47,7 @@ public class RelayClientHandler extends BaseChannelInboundHandlerAdapter<RelayCo
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws InvalidPropertiesFormatException {
-        boolean isConnectedToRequiredServices = ConnectorToAuthService.getInstance().isSvcConnected();
+        boolean isConnectedToRequiredServices = connectorToAuthService.isSvcConnected();
 
         if (!isConnectedToRequiredServices)
             syncConnectToRequiredServices(ctx, msg);
@@ -60,7 +61,7 @@ public class RelayClientHandler extends BaseChannelInboundHandlerAdapter<RelayCo
     }
 
     private void connectToAuthService(ChannelHandlerContext ctx, Object msg) throws InvalidPropertiesFormatException {
-        ConnectorToAuthService.getInstance().connectServiceToService(new BaseConnectorInSvcToSvc.ConnectToServiceCallback() {
+        connectorToAuthService.connectServiceToService(new BaseConnectorInSvcToSvc.ConnectToServiceCallback() {
 
             /**
              * Eсли приконнектились к сервису авторизации - начинаем его читать и делать с ним дела

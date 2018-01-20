@@ -24,12 +24,13 @@ import static com.esotericsoftware.minlog.Log.info;
 public class SocSrvHandler extends BaseChannelInboundHandlerAdapter<SocSrvConfig> {
 
     private SimpleTransactionReader transactionReader = new SimpleTransactionReader();
+    ConnectorToRelayService connectorToRelayService = new ConnectorToRelayService();
 
     @Override
     public void init() {
         transactionReader.getTransactionsAndReadersResolver()
                 .addToResolve(
-                    new TokenFromClientReader(ConnectorToRelayService.getInstance().getSvcToSvcHandler()),
+                    new TokenFromClientReader(connectorToRelayService.getSvcToSvcHandler()),
                     new BaseTransaction(ConnectionToServiceType.CLIENT_TO_SERVICE, ClientToServerDataStates.TOKEN_WITH_ADDITIONAL_INFORMATION.ordinal()));
     }
 
@@ -40,7 +41,7 @@ public class SocSrvHandler extends BaseChannelInboundHandlerAdapter<SocSrvConfig
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        boolean isConnectedToRequiredServices = ConnectorToRelayService.getInstance().isSvcConnected();
+        boolean isConnectedToRequiredServices = connectorToRelayService.isSvcConnected();
 
         if (!isConnectedToRequiredServices)
             syncConnectToRequiredServices(ctx, msg);
@@ -54,7 +55,7 @@ public class SocSrvHandler extends BaseChannelInboundHandlerAdapter<SocSrvConfig
     }
 
     private void connectToRelayService(ChannelHandlerContext ctx, Object msg) throws InvalidPropertiesFormatException {
-        ConnectorToRelayService.getInstance().connectServiceToService(new BaseConnectorInSvcToSvc.ConnectToServiceCallback() {
+        connectorToRelayService.connectServiceToService(new BaseConnectorInSvcToSvc.ConnectToServiceCallback() {
 
             /**
              * Eсли приконнектились к сервису реле - начинаем его читать и делать с ним дела
