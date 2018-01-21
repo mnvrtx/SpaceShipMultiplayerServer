@@ -11,6 +11,7 @@ import com.fogok.relaybalancer.readers.TokenFromClientReader;
 import com.fogok.spaceshipserver.BaseChannelInboundHandlerAdapter;
 import com.fogok.spaceshipserver.baseservice.SimpleTransactionReader;
 import com.fogok.spaceshipserver.utlis.BaseConnectorInSvcToSvc;
+import com.fogok.spaceshipserver.utlis.BaseHandlerInSvcToSvc;
 
 import java.util.InvalidPropertiesFormatException;
 
@@ -25,14 +26,15 @@ import static com.esotericsoftware.minlog.Log.info;
 public class RelayClientHandler extends BaseChannelInboundHandlerAdapter<RelayConfig> {
 
     private SimpleTransactionReader transactionReader = new SimpleTransactionReader();
-    private ConnectorToAuthService connectorToAuthService = new ConnectorToAuthService();
+    private ConnectorToAuthService connectorToAuthService = ConnectorToAuthService.getInstance();
+
+    private TokenFromClientReader tokenFromClientReader;
 
     @Override
     public void init() {
-        RelayToAuthHandler relayToAuthHandler = connectorToAuthService.getSvcToSvcHandler();
         transactionReader.getTransactionsAndReadersResolver()
                 .addToResolve(
-                    new TokenFromClientReader(relayToAuthHandler),
+                        tokenFromClientReader = new TokenFromClientReader(),
                     new BaseTransaction(ConnectionToServiceType.CLIENT_TO_SERVICE, ClientToServerDataStates.TOKEN_WITH_ADDITIONAL_INFORMATION.ordinal()));
     }
 
@@ -49,10 +51,12 @@ public class RelayClientHandler extends BaseChannelInboundHandlerAdapter<RelayCo
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws InvalidPropertiesFormatException {
         boolean isConnectedToRequiredServices = connectorToAuthService.isSvcConnected();
 
-        if (!isConnectedToRequiredServices)
+        if (!isConnectedToRequiredServices) {
             syncConnectToRequiredServices(ctx, msg);
-        else
+        } else {
+            tokenFromClientReader.setRelayToAuthHandler(connectorToAuthService.getSvcToSvcHandler());
             syncClientChannelReadImpl(ctx.channel(), msg);
+        }
 
     }
 
@@ -67,7 +71,8 @@ public class RelayClientHandler extends BaseChannelInboundHandlerAdapter<RelayCo
              * Eсли приконнектились к сервису авторизации - начинаем его читать и делать с ним дела
              */
             @Override
-            public void success(ChannelFuture channelFuture) {
+            public void success(ChannelFuture channelFuture, BaseHandlerInSvcToSvc svcToSvcHandler){
+                tokenFromClientReader.setRelayToAuthHandler((RelayToAuthHandler) svcToSvcHandler);
                 syncClientChannelReadImpl(ctx.channel(), msg);
             }
 

@@ -8,16 +8,22 @@ import java.util.concurrent.Executors;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
+import static com.esotericsoftware.minlog.Log.debug;
+
 public class ExecutorToThreadPool {
 
-    private ExecutorService service = Executors.newFixedThreadPool(4);     //вся эта параша выполняется асинхронно, так шо не боимся
+    private ExecutorService service = Executors.newCachedThreadPool();     //вся эта параша выполняется асинхронно, так шо не боимся
 
     public void execute(final BaseTransactionReader transactionReader, final Channel channel, final Object msg){
-        service.execute(() -> transactionReader.readByteBufFromChannel(channel, (ByteBuf) msg));
+        service.submit(() -> {
+            debug("Submit new read inform from channel");
+            transactionReader.readByteBufFromChannel(channel, (ByteBuf) msg);
+            debug("Complete read from channel");
+        });
     }
 
-    public ExecutorService getService() {
-        return service;
+    public void shutDownThreads(){
+        service.shutdownNow();
     }
 
 }

@@ -14,7 +14,7 @@ public class TokenFromClientReader implements BaseReaderFromTransaction<TokenToS
 
     private RelayToAuthHandler relayToAuthHandler;
 
-    public TokenFromClientReader(RelayToAuthHandler relayToAuthHandler) {
+    public void setRelayToAuthHandler(RelayToAuthHandler relayToAuthHandler) {
         this.relayToAuthHandler = relayToAuthHandler;
     }
 

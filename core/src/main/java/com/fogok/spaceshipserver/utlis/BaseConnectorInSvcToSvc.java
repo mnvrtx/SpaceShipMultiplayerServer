@@ -15,30 +15,35 @@ public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S exten
 
     private boolean svcConnected;
     private S svcToSvcHandler;
+    private Class<S> svcToSvcHandlerClass;
     private Class<U> exceptionHandlerClass;
 
-    public BaseConnectorInSvcToSvc(Class<S> svcToSvcHandler, Class<U> exceptionHandlerClass) {
+    public BaseConnectorInSvcToSvc(Class<S> svcToSvcHandlerClass, Class<U> exceptionHandlerClass) {
+        this.svcToSvcHandlerClass = svcToSvcHandlerClass;
         this.exceptionHandlerClass = exceptionHandlerClass;
-        try {
-            this.svcToSvcHandler = svcToSvcHandler.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
     }
 
     public void connectServiceToService(ConnectToServiceCallback connectToServiceCallback, T config, String ip) throws InvalidPropertiesFormatException {
         if (!svcConnected) {
             debug("connectServiceToService");
             ServerUtil.IPComponents ipComponents = ServerUtil.parseIpComponents(ip);
-            svcToSvcHandler.init(config);
 
             try {
-                ConnectToServiceImpl.getInstance().connect(svcToSvcHandler, exceptionHandlerClass.newInstance(),
+                svcToSvcHandler = svcToSvcHandlerClass.newInstance();
+                svcToSvcHandler.init(config);
+
+                ConnectToServiceImpl.getInstance().connect(svcToSvcHandler, ServiceStarter.getInstance().getWorkerGroup(),
+                        //causes
+                        exceptionHandlerClass.newInstance(),
                         cause -> connectToServiceCallback.except(ip),
+                        //success
                         channelFuture -> {
-                            connectToServiceCallback.success(channelFuture);
+                            connectToServiceCallback.success(channelFuture, svcToSvcHandler);
                             svcConnected = true;
-                            channelFuture.channel().closeFuture().addListener((ChannelFutureListener) channelFuture1 -> svcConnected = false);
+                            channelFuture.channel().closeFuture().addListener((ChannelFutureListener) channelFuture1 -> {
+                                warn("Connection to svc dropped");
+                                svcConnected = false;
+                            });
                         }, ipComponents.getIp(), ipComponents.getPort());
             } catch (InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
@@ -49,16 +54,16 @@ public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S exten
         }
     }
 
-    public boolean isSvcConnected() {
-        return svcConnected;
-    }
-
     public S getSvcToSvcHandler() {
         return svcToSvcHandler;
     }
 
+    public boolean isSvcConnected() {
+        return svcConnected;
+    }
+
     public interface ConnectToServiceCallback {
-        void success(ChannelFuture channelFuture) throws InstantiationException, IllegalAccessException;
+        void success(ChannelFuture channelFuture, BaseHandlerInSvcToSvc svcToSvcHandler) throws InstantiationException, IllegalAccessException;
         void except(String ip);
     }
 }

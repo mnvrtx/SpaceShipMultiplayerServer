@@ -3,6 +3,7 @@ package com.fogok.spaceshipserver;
 import com.fogok.spaceshipserver.config.BaseConfigModel;
 import com.fogok.spaceshipserver.utlis.ExecutorToThreadPool;
 
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 public abstract class BaseChannelInboundHandlerAdapter<T extends BaseConfigModel> extends ChannelInboundHandlerAdapter {
@@ -13,6 +14,11 @@ public abstract class BaseChannelInboundHandlerAdapter<T extends BaseConfigModel
     public void init(T config){
         setConfig(config);
         init();
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) {
+        executorToThreadPool.shutDownThreads();
     }
 
     public abstract void init();
