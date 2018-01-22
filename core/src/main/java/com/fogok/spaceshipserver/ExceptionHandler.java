@@ -9,7 +9,7 @@ import io.netty.channel.ChannelPromise;
 import static com.esotericsoftware.minlog.Log.*;
 
 public class ExceptionHandler extends ChannelDuplexHandler {
-
+    //TODO: почему то нетти не принтит инфу об ошибках в лог (по идее должен, мы же дублируем консольный стрим в файл прост) разобраться...
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         error("Unhandled exception in server: ", cause);

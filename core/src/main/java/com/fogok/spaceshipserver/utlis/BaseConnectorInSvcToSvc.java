@@ -26,6 +26,8 @@ public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S exten
     public void connectServiceToService(ConnectToServiceCallback connectToServiceCallback, T config, String ip) throws InvalidPropertiesFormatException {
         if (!svcConnected) {
             debug("connectServiceToService");
+            //TODO: почему-то при разрыве подключения евент лупы считаются дропнутыми, надо проверить (ааа, я понял, мы используем воркинг груп с сервер стартера, вот и все, скорее всего надо просто поставить тут воркинг груп новый (как новый инстанс),
+            // и все запашит. Нужно проверить 2 кейса - рестартнуть реле и попробовать подключиться (уже работало), и рестартнуть сервис авторизации (вот в таком случае все валится)
             ServerUtil.IPComponents ipComponents = ServerUtil.parseIpComponents(ip);
 
             try {

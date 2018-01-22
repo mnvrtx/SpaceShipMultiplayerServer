@@ -1,22 +1,16 @@
 package com.fogok.relaybalancer.readers;
 
 import com.fogok.dataobjects.datastates.RequestTypeInTokenToServiceTrnsn;
-import com.fogok.dataobjects.transactions.BaseReaderFromTransaction;
 import com.fogok.dataobjects.transactions.common.TokenToServiceTransaction;
 import com.fogok.dataobjects.transactions.utils.TransactionExecutor;
 import com.fogok.relaybalancer.connectors.RelayToAuthHandler;
 import com.fogok.spaceshipserver.transactions.CheckValidTokenToAuthTransaction;
+import com.fogok.spaceshipserver.utlis.BaseReaderTrnCSS;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 
-public class TokenFromClientReader implements BaseReaderFromTransaction<TokenToServiceTransaction> {
-
-    private RelayToAuthHandler relayToAuthHandler;
-
-    public void setRelayToAuthHandler(RelayToAuthHandler relayToAuthHandler) {
-        this.relayToAuthHandler = relayToAuthHandler;
-    }
+public class TokenFromClientReader extends BaseReaderTrnCSS<TokenToServiceTransaction, RelayToAuthHandler> {
 
     @Override
     public ChannelFuture read(Channel channel, TokenToServiceTransaction transaction, TransactionExecutor transactionExecutor) {
