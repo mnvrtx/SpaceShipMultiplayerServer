@@ -37,7 +37,7 @@ public abstract class BaseHndlrToClntInSvcToSvc<T extends BaseConfigModel, S ext
         if (!isConnectedToRequiredServices) {
             syncConnectToRequiredServices(ctx, msg);
         } else {
-            tokenFromClientReader.setRelayToAuthHandler(connectorToService.getSvcToSvcHandler());
+            tokenFromClientReader.setSrvToSrvHandler(connectorToService.getSvcToSvcHandler());
             syncClientChannelReadImpl(ctx.channel(), msg);
         }
     }

@@ -1,23 +1,18 @@
 package com.fogok.socialserver.readers;
 
-import com.fogok.dataobjects.transactions.BaseReaderFromTransaction;
 import com.fogok.dataobjects.transactions.common.TokenToServiceTransaction;
 import com.fogok.dataobjects.transactions.utils.TransactionExecutor;
 import com.fogok.socialserver.connectors.SocToRelayHandler;
+import com.fogok.spaceshipserver.utlis.BaseReaderTrnCSS;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 
-public class TokenFromClientReader implements BaseReaderFromTransaction<TokenToServiceTransaction> {
-
-    private SocToRelayHandler socToRelayHandler;
-    public TokenFromClientReader(SocToRelayHandler socToRelayHandler) {
-        this.socToRelayHandler = socToRelayHandler;
-    }
+public class TokenFromClientReader extends BaseReaderTrnCSS<TokenToServiceTransaction, SocToRelayHandler> {
 
     @Override
     public ChannelFuture read(Channel clientChannel, TokenToServiceTransaction tokenToServiceTransaction, TransactionExecutor transactionExecutor) {
-        socToRelayHandler.checkValidToken(clientChannel, tokenToServiceTransaction);
+        srvToSrvHandler.checkValidToken(clientChannel, tokenToServiceTransaction);
         return null;
     }
 

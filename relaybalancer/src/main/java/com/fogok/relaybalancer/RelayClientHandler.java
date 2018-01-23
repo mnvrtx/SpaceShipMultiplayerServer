@@ -48,7 +48,7 @@ public class RelayClientHandler extends BaseHndlrToClntInSvcToSvc<RelayConfig, T
              */
             @Override
             public void success(ChannelFuture channelFuture, BaseHandlerInSvcToSvc svcToSvcHandler){
-                tokenFromClientReader.setRelayToAuthHandler((RelayToAuthHandler) svcToSvcHandler);
+                tokenFromClientReader.setSrvToSrvHandler((RelayToAuthHandler) svcToSvcHandler);
                 syncClientChannelReadImpl(ctx.channel(), msg);
             }
 

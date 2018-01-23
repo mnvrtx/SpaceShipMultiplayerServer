@@ -14,7 +14,7 @@ public class TokenFromClientReader extends BaseReaderTrnCSS<TokenToServiceTransa
 
     @Override
     public ChannelFuture read(Channel channel, TokenToServiceTransaction transaction, TransactionExecutor transactionExecutor) {
-        relayToAuthHandler.checkValidTokenFromClient(channel, transaction,
+        srvToSrvHandler.checkValidTokenFromClient(channel, transaction,
                 transaction.getRequestTypeInTokenToServiceTrnsn() == RequestTypeInTokenToServiceTrnsn.CHECK_VALID ?
                         CheckValidTokenToAuthTransaction.SENDER_SERVICE :
                         CheckValidTokenToAuthTransaction.SENDER_CLIENT);

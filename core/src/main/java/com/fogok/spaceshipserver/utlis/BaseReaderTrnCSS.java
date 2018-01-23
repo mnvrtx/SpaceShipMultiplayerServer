@@ -6,9 +6,9 @@ import com.fogok.spaceshipserver.BaseChannelInboundHandlerAdapter;
 
 public abstract class BaseReaderTrnCSS<T extends BaseTransaction, S extends BaseChannelInboundHandlerAdapter> implements BaseReaderFromTransaction<T> {
 
-    protected S relayToAuthHandler;
+    protected S srvToSrvHandler;
 
-    public void setRelayToAuthHandler(S relayToAuthHandler) {
-        this.relayToAuthHandler = relayToAuthHandler;
+    public void setSrvToSrvHandler(S srvToSrvHandler) {
+        this.srvToSrvHandler = srvToSrvHandler;
     }
 }
