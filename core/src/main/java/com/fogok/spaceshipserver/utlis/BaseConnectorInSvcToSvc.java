@@ -8,6 +8,7 @@ import java.util.InvalidPropertiesFormatException;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.nio.NioEventLoopGroup;
 
 import static com.esotericsoftware.minlog.Log.*;
 
@@ -26,15 +27,13 @@ public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S exten
     public void connectServiceToService(ConnectToServiceCallback connectToServiceCallback, T config, String ip) throws InvalidPropertiesFormatException {
         if (!svcConnected) {
             debug("connectServiceToService");
-            //TODO: почему-то при разрыве подключения евент лупы считаются дропнутыми, надо проверить (ааа, я понял, мы используем воркинг груп с сервер стартера, вот и все, скорее всего надо просто поставить тут воркинг груп новый (как новый инстанс),
-            // и все запашит. Нужно проверить 2 кейса - рестартнуть реле и попробовать подключиться (уже работало), и рестартнуть сервис авторизации (вот в таком случае все валится)
             ServerUtil.IPComponents ipComponents = ServerUtil.parseIpComponents(ip);
 
             try {
                 svcToSvcHandler = svcToSvcHandlerClass.newInstance();
                 svcToSvcHandler.init(config);
 
-                ConnectToServiceImpl.getInstance().connect(svcToSvcHandler, ServiceStarter.getInstance().getWorkerGroup(),
+                ConnectToServiceImpl.getInstance().connect(svcToSvcHandler, new NioEventLoopGroup(),
                         //causes
                         exceptionHandlerClass.newInstance(),
                         cause -> connectToServiceCallback.except(ip),

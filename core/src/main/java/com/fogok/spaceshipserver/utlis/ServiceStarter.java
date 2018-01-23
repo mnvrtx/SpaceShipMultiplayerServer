@@ -31,12 +31,6 @@ public class ServiceStarter {
     }
     //endregion
 
-    private EventLoopGroup workerGroup;
-
-    public EventLoopGroup getWorkerGroup() {
-        return workerGroup;
-    }
-
     public static class ServiceParamsBuilder<T extends BaseChannelInboundHandlerAdapter, S extends ChannelDuplexHandler>{
         private CLIArgs cliArgs;
         private BaseConfigModel specificConfigWithCommonConfig;
@@ -126,7 +120,7 @@ public class ServiceStarter {
         int port = Integer.parseInt(portStr);
 
         EventLoopGroup bossGroup = new NioEventLoopGroup();
-        workerGroup = new NioEventLoopGroup();
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         try {
             ServerBootstrap boot = new ServerBootstrap();

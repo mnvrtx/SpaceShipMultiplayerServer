@@ -32,18 +32,18 @@ public class AuthReader implements BaseReaderFromTransaction<AuthTransaction> {
 
         try {
             Thread.sleep(1500);
+            if (isAuthComplete) {
+                return transactionExecutor.execute(clCh,
+                        new TokenToClientTransaction(ServerUtil.randomString(30), "testNickname", authConfig.getRelayBalancerServiceIp()));
+            } else {
+                warn(String.format("AuthAction: Client %s sent bad auth data: %s", clCh.remoteAddress(), authTransaction.toString()));
+                return transactionExecutor.execute(clCh,
+                        new ConnectionInformationTransaction(ConnectionInformationTransaction.RESPONSE_CODE_ERROR));
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        if (isAuthComplete) {
-            return transactionExecutor.execute(clCh,
-                    new TokenToClientTransaction(ServerUtil.randomString(30), "testNickname", authConfig.getRelayBalancerServiceIp()));
-        } else {
-            warn(String.format("AuthAction: Client %s sent bad auth data: %s", clCh.remoteAddress(), authTransaction.toString()));
-            return transactionExecutor.execute(clCh,
-                    new ConnectionInformationTransaction(ConnectionInformationTransaction.RESPONSE_CODE_ERROR));
-        }
+        return null;
     }
 
     @Override

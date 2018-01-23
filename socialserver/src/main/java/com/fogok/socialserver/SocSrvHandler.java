@@ -10,6 +10,7 @@ import com.fogok.socialserver.readers.TokenFromClientReader;
 import com.fogok.spaceshipserver.BaseChannelInboundHandlerAdapter;
 import com.fogok.spaceshipserver.baseservice.SimpleTransactionReader;
 import com.fogok.spaceshipserver.utlis.BaseConnectorInSvcToSvc;
+import com.fogok.spaceshipserver.utlis.BaseHandlerInSvcToSvc;
 
 import java.util.InvalidPropertiesFormatException;
 
@@ -60,8 +61,9 @@ public class SocSrvHandler extends BaseChannelInboundHandlerAdapter<SocSrvConfig
             /**
              * Eсли приконнектились к сервису реле - начинаем его читать и делать с ним дела
              */
+
             @Override
-            public void success(ChannelFuture channelFuture) {
+            public void success(ChannelFuture channelFuture, BaseHandlerInSvcToSvc svcToSvcHandler) {
                 syncClientChannelReadImpl(ctx.channel(), msg);
             }
 
