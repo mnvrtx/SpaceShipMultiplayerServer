@@ -42,6 +42,10 @@ public abstract class BaseHndlrToClntInSvcToSvc<T extends BaseConfigModel, S ext
         }
     }
 
+    public SimpleTransactionReader getTransactionReader() {
+        return transactionReader;
+    }
+
     protected abstract void syncConnectToRequiredServices(ChannelHandlerContext ctx, Object msg) throws InvalidPropertiesFormatException;
 
     protected abstract void syncClientChannelReadImpl(Channel clientChannel, Object msg);

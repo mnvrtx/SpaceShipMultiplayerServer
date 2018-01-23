@@ -4,6 +4,7 @@ import com.fogok.dataobjects.transactions.common.ConnectionInformationTransactio
 import com.fogok.socialserver.config.SocSrvConfig;
 import com.fogok.socialserver.connectors.ConnectorToRelayService;
 import com.fogok.socialserver.connectors.SocToRelayHandler;
+import com.fogok.socialserver.logic.SocServLogic;
 import com.fogok.socialserver.readers.TokenFromClientReader;
 import com.fogok.spaceshipserver.utlis.BaseConnectorInSvcToSvc;
 import com.fogok.spaceshipserver.utlis.BaseHandlerInSvcToSvc;
@@ -33,6 +34,7 @@ public class SocSrvHandler extends BaseHndlrToClntInSvcToSvc<SocSrvConfig, Token
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
         info(String.format("Client %s joined to %s service", ctx.channel().remoteAddress(), this.getClass().getSimpleName()));
+        SocServLogic.getInstance().incPlayer();
     }
 
     @Override
@@ -76,5 +78,6 @@ public class SocSrvHandler extends BaseHndlrToClntInSvcToSvc<SocSrvConfig, Token
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) {
         info(String.format("Client %s left in %s service", ctx.channel().remoteAddress(), this.getClass().getSimpleName()));
+        SocServLogic.getInstance().decPlayer();
     }
 }

@@ -50,6 +50,10 @@ public abstract class BaseHandlerInSvcToSvc<T extends BaseConfigModel> extends B
         transactionReader.getTransactionExecutor().execute(svcToSvcChlannel, transaction);
     }
 
+    public SimpleTransactionReader getTransactionReader() {
+        return transactionReader;
+    }
+
     public Map<String, Channel> getClientsChannelsAndTokensRelations() {
         return clientsChannelsAndTokensRelations;
     }
