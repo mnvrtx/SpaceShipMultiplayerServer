@@ -31,6 +31,8 @@ public class ServiceStarter {
     }
     //endregion
 
+    private BaseConfigModel specificConfigWithCommonConfig;
+
     public static class ServiceParamsBuilder<T extends BaseChannelInboundHandlerAdapter, S extends ChannelDuplexHandler>{
         private CLIArgs cliArgs;
         private BaseConfigModel specificConfigWithCommonConfig;
@@ -64,6 +66,9 @@ public class ServiceStarter {
         }
     }
 
+    public BaseConfigModel getSpecificConfigWithCommonConfig() {
+        return specificConfigWithCommonConfig;
+    }
 
     public CLIArgs readCLI(String[] args){
         CLIArgs cliArgs = new CLIArgs();
@@ -132,7 +137,7 @@ public class ServiceStarter {
                             ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
                             ch.pipeline().addLast(new LoggingHandler());
                             T coreHandler = serviceParamsBuilder.coreHandler.newInstance();
-                            coreHandler.init(serviceParamsBuilder.specificConfigWithCommonConfig);
+                            coreHandler.init(specificConfigWithCommonConfig = serviceParamsBuilder.specificConfigWithCommonConfig);
                             ch.pipeline().addLast(coreHandler);
                             ch.pipeline().addLast(serviceParamsBuilder.exceptionHandler.newInstance());
                         }

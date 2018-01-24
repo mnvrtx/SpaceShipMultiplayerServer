@@ -6,7 +6,7 @@ import com.fogok.dataobjects.PlayerGlobalData;
 import com.fogok.dataobjects.ServerState;
 import com.fogok.dataobjects.datastates.ClientState;
 import com.fogok.dataobjects.datastates.ClientToServerDataStates;
-import com.fogok.spaceshipserver.database.DatabaseWrapper;
+import com.fogok.spaceshipserver.database.DBUtils;
 import com.fogok.spaceshipserver.game.EverybodyObjectsController;
 import com.fogok.spaceshipserver.utlis.ServerUtil;
 
@@ -39,7 +39,7 @@ public class LogicThreadPool implements LogicThreadPoolBase{
         public LogicData(final Channel channel) {
             this.channel = channel;
             playerGlobalData = new PlayerGlobalData();
-            playerGlobalData.setDataFloat(0.5f, PlayerGlobalData.PlayerGlobalDataFloats.WINLOSEPERCENT);
+//            playerGlobalData.setDataFloat(0.5f, PlayerGlobalData.PlayerGlobalDataFloats.WINLOSEPERCENT);
         }
 
         public void updateState(ClientState clientState) {
@@ -70,13 +70,13 @@ public class LogicThreadPool implements LogicThreadPoolBase{
 
     private HallLogic hallLogic;
 
-    private DatabaseWrapper databaseWrapper;
+    private DBUtils DBUtils;
 
     private LogicThreadPool() {
 
         serverState = new ServerState();
         hallLogic = new HallLogic(serverState);
-        databaseWrapper = new DatabaseWrapper();
+        DBUtils = new DBUtils();
 
         ScheduledExecutorService service = Executors.newScheduledThreadPool(2);     //вся эта параша выполняется асинхронно, так шо не боимся
         loginsClients = new HashMap<>(1000); //хз как >1к коннектов тут может быть
@@ -151,7 +151,7 @@ public class LogicThreadPool implements LogicThreadPoolBase{
                 String login = input.readString();
                 String password = input.readString();
 
-                if (databaseWrapper.validateAccount(login, password)) {
+                if (DBUtils.validateAccount(login, password)) {
                     logicData.updateState(ClientState.IN_HALL);
 
                     output.writeInt(logicData.getClientState().ordinal(), true);
