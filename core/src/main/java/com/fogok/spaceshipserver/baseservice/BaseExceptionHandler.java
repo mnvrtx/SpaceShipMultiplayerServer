@@ -12,10 +12,10 @@ import static com.esotericsoftware.minlog.Log.info;
 
 public abstract class BaseExceptionHandler extends ChannelDuplexHandler {
 
-
+    //TODO: add flag to speed up impl
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        if (cause instanceof IOException) {
+        if (cause instanceof IOException) { //TODO: to slow
             info(String.format("Force off connect: ", cause.getMessage().split("[\\r\\n]+")[1]));
             forceOffDisconnect(cause);
         } else {
@@ -37,7 +37,7 @@ public abstract class BaseExceptionHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) { //TODO: give memory leak
         ctx.write(msg, promise.addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess()) {
                 error(String.format("Unhandled exception in write: %s", future.cause()));

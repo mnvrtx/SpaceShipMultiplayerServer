@@ -37,7 +37,7 @@ public class Application {
         ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<SocSrvHandler, SimpleExceptionHandler>()
                 .setConfigModel(new SocSrvConfigReader(cliArgs).getConfig().setCommonConfig(new CommonConfigReader(cliArgs).getConfig()))
                 .setCliArgs(cliArgs)
-                .setCoreHandler(SocSrvHandler.class)
+                .setCoreTcpHandler(SocSrvHandler.class)
                 .setExceptionHandler(SimpleExceptionHandler.class));
     }
 

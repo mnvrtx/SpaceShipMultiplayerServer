@@ -37,7 +37,7 @@ public class Application {
         ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<RelayClientHandler, SimpleExceptionHandler>()
                         .setConfigModel(new RelayConfigReader(cliArgs).getConfig().setCommonConfig(new CommonConfigReader(cliArgs).getConfig()))
                         .setCliArgs(cliArgs)
-                        .setCoreHandler(RelayClientHandler.class)
+                        .setCoreTcpHandler(RelayClientHandler.class)
                         .setExceptionHandler(SimpleExceptionHandler.class));
     }
 

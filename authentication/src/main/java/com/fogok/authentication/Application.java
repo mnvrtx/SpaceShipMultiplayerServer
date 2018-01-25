@@ -48,7 +48,7 @@ public class Application {
         ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<AuthHandler, SimpleExceptionHandler>()
                         .setConfigModel(new AuthConfigReader(cliArgs).getConfig().setCommonConfig(commonConfig))
                         .setCliArgs(cliArgs)
-                        .setCoreHandler(AuthHandler.class)
+                        .setCoreTcpHandler(AuthHandler.class)
                         .setExceptionHandler(SimpleExceptionHandler.class));
     }
 
