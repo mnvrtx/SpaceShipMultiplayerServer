@@ -45,10 +45,10 @@ public class Application {
     }
 
     private void startServiceForAllClients(BaseConfigModel commonConfig) throws IOException, InstantiationException, IllegalAccessException {
-        ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<AuthHandler, SimpleExceptionHandler>()
+        ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<SimpleExceptionHandler>()
                         .setConfigModel(new AuthConfigReader(cliArgs).getConfig().setCommonConfig(commonConfig))
                         .setCliArgs(cliArgs)
-                        .setCoreTcpHandler(AuthHandler.class)
+                        .setCoreTcpHandler(AuthHandlerTcp.class)
                         .setExceptionHandler(SimpleExceptionHandler.class));
     }
 

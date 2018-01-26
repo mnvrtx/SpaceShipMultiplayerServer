@@ -4,14 +4,14 @@ import com.fogok.dataobjects.datastates.RequestTypeInTokenToServiceTrnsn;
 import com.fogok.dataobjects.transactions.common.TokenToServiceTransaction;
 import com.fogok.dataobjects.transactions.socserv.KeepAliveTransaction;
 import com.fogok.dataobjects.transactions.utils.TransactionExecutor;
-import com.fogok.socialserver.connectors.SocToRelayHandler;
+import com.fogok.socialserver.connectors.SocToRelayHandlerTcp;
 import com.fogok.socialserver.logic.SocServLogic;
 import com.fogok.spaceshipserver.utlis.BaseReaderTrnCSS;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 
-public class TokenFromClientReader extends BaseReaderTrnCSS<TokenToServiceTransaction, SocToRelayHandler> {
+public class TokenFromClientReader extends BaseReaderTrnCSS<TokenToServiceTransaction, SocToRelayHandlerTcp> {
 
     private KeepAliveTransaction keepAliveTransaction = new KeepAliveTransaction("",
             SocServLogic.getInstance().getServerState());

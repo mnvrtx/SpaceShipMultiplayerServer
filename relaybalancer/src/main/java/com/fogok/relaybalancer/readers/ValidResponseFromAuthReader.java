@@ -2,7 +2,7 @@ package com.fogok.relaybalancer.readers;
 
 import com.fogok.dataobjects.transactions.BaseReaderFromTransaction;
 import com.fogok.dataobjects.transactions.utils.TransactionExecutor;
-import com.fogok.relaybalancer.connectors.RelayToAuthHandler;
+import com.fogok.relaybalancer.connectors.RelayToAuthHandlerTcp;
 import com.fogok.spaceshipserver.transactions.CheckValidTokenFromAuthTransaction;
 
 import io.netty.channel.Channel;
@@ -10,9 +10,9 @@ import io.netty.channel.ChannelFuture;
 
 public class ValidResponseFromAuthReader implements BaseReaderFromTransaction<CheckValidTokenFromAuthTransaction> {
 
-    private RelayToAuthHandler relayToAuthHandler;
+    private RelayToAuthHandlerTcp relayToAuthHandler;
 
-    public ValidResponseFromAuthReader(RelayToAuthHandler relayToAuthHandler) {
+    public ValidResponseFromAuthReader(RelayToAuthHandlerTcp relayToAuthHandler) {
         this.relayToAuthHandler = relayToAuthHandler;
     }
 

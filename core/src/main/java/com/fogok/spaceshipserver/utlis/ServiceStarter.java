@@ -3,7 +3,8 @@ package com.fogok.spaceshipserver.utlis;
 import com.beust.jcommander.JCommander;
 import com.fogok.io.Fgkio;
 import com.fogok.io.logging.Logging;
-import com.fogok.spaceshipserver.BaseChannelInboundHandlerAdapter;
+import com.fogok.spaceshipserver.BaseTcpChannelInboundHandlerAdapter;
+import com.fogok.spaceshipserver.BaseUdpChannelInboundHandlerAdapter;
 import com.fogok.spaceshipserver.config.BaseConfigModel;
 
 import java.io.IOException;
@@ -12,10 +13,10 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.FixedRecvByteBufAllocator;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
@@ -36,38 +37,38 @@ public class ServiceStarter {
 
     private BaseConfigModel specificConfigWithCommonConfig;
 
-    public static class ServiceParamsBuilder<T extends BaseChannelInboundHandlerAdapter, S extends ChannelDuplexHandler>{
+    public static class ServiceParamsBuilder<S extends ChannelDuplexHandler>{
         private CLIArgs cliArgs;
         private BaseConfigModel specificConfigWithCommonConfig;
-        private Class<T> coreTcpHandler;
-        private Class<? extends SimpleChannelInboundHandler> coreUdpHandler; //TODO: refactor ALL GENERICS !
+        private Class<? extends BaseTcpChannelInboundHandlerAdapter> coreTcpHandler;
+        private Class<? extends BaseUdpChannelInboundHandlerAdapter> coreUdpHandler;
         private Class<S> exceptionHandler;
         private boolean tcp = true;
 
-        public ServiceParamsBuilder<T, S> setCliArgs(CLIArgs cliArgs) {
+        public ServiceParamsBuilder<S> setCliArgs(CLIArgs cliArgs) {
             this.cliArgs = cliArgs;
             return this;
         }
 
-        public ServiceParamsBuilder<T, S> setConfigModel(BaseConfigModel specificConfigWithCommonConfig) {
+        public ServiceParamsBuilder<S> setConfigModel(BaseConfigModel specificConfigWithCommonConfig) {
             this.specificConfigWithCommonConfig = specificConfigWithCommonConfig;
             return this;
         }
 
-        public ServiceParamsBuilder<T, S> setCoreTcpHandler(Class<T> coreHandler) {
+        public ServiceParamsBuilder<S> setCoreTcpHandler(Class<? extends BaseTcpChannelInboundHandlerAdapter> coreHandler) {
             this.coreTcpHandler = coreHandler;
             this.tcp = true;
             return this;
         }
 
-        public ServiceParamsBuilder<T, S> setCoreUdpHandler(Class<? extends SimpleChannelInboundHandler> coreUdpHandler) {
+        public ServiceParamsBuilder<S> setCoreUdpHandler(Class<? extends BaseUdpChannelInboundHandlerAdapter> coreUdpHandler) {
             this.coreUdpHandler = coreUdpHandler;
             this.tcp = false;
             return this;
         }
 
 
-        public ServiceParamsBuilder<T, S> setExceptionHandler(Class<S> exceptionHandler) {
+        public ServiceParamsBuilder<S> setExceptionHandler(Class<S> exceptionHandler) {
             this.exceptionHandler = exceptionHandler;
             return this;
         }
@@ -87,7 +88,7 @@ public class ServiceStarter {
         Fgkio.logging.createLogSystem(new Logging.LogSystemParams().setAppName(cliArgs.serviceName).setLogLevel(cliArgs.logLevel).setDebug(cliArgs.debug).setLogToConsole(true));
     }
 
-    public <T extends BaseChannelInboundHandlerAdapter, S extends ChannelDuplexHandler> void startService(final ServiceParamsBuilder<T, S> serviceParamsBuilder)
+    public <T extends ChannelInboundHandlerAdapter, S extends ChannelDuplexHandler> void startService(final ServiceParamsBuilder<S> serviceParamsBuilder)
     {
 
         //region ErrorsCheck
@@ -149,7 +150,7 @@ public class ServiceStarter {
                             public void initChannel(SocketChannel ch) throws Exception {
                                 ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
                                 ch.pipeline().addLast(new LoggingHandler());
-                                T coreHandler = serviceParamsBuilder.coreTcpHandler.newInstance();
+                                BaseTcpChannelInboundHandlerAdapter coreHandler = serviceParamsBuilder.coreTcpHandler.newInstance();
                                 coreHandler.init(specificConfigWithCommonConfig = serviceParamsBuilder.specificConfigWithCommonConfig);
                                 ch.pipeline().addLast(coreHandler);
                                 ch.pipeline().addLast(serviceParamsBuilder.exceptionHandler.newInstance());
@@ -165,7 +166,7 @@ public class ServiceStarter {
                             protected void initChannel(NioDatagramChannel ch) throws Exception {
                                 ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
                                 ch.pipeline().addLast(new LoggingHandler());
-                                T coreHandler = serviceParamsBuilder.coreTcpHandler.newInstance();
+                                BaseUdpChannelInboundHandlerAdapter coreHandler = serviceParamsBuilder.coreUdpHandler.newInstance();
                                 coreHandler.init(specificConfigWithCommonConfig = serviceParamsBuilder.specificConfigWithCommonConfig);
                                 ch.pipeline().addLast(coreHandler);
                                 ch.pipeline().addLast(serviceParamsBuilder.exceptionHandler.newInstance());

@@ -2,7 +2,7 @@ package com.fogok.socialserver.readers;
 
 import com.fogok.dataobjects.transactions.BaseReaderFromTransaction;
 import com.fogok.dataobjects.transactions.utils.TransactionExecutor;
-import com.fogok.socialserver.connectors.SocToRelayHandler;
+import com.fogok.socialserver.connectors.SocToRelayHandlerTcp;
 import com.fogok.spaceshipserver.transactions.CheckValidTokenFromAuthTransaction;
 
 import io.netty.channel.Channel;
@@ -10,10 +10,10 @@ import io.netty.channel.ChannelFuture;
 
 public class TokenFromRelayReader implements BaseReaderFromTransaction<CheckValidTokenFromAuthTransaction> {
 
-    private SocToRelayHandler socToRelayHandler;
+    private SocToRelayHandlerTcp socToRelayHandler;
     private boolean isValidToken;
 
-    public TokenFromRelayReader(SocToRelayHandler socToRelayHandler) {
+    public TokenFromRelayReader(SocToRelayHandlerTcp socToRelayHandler) {
         this.socToRelayHandler = socToRelayHandler;
     }
 

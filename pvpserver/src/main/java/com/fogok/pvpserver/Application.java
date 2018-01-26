@@ -43,12 +43,11 @@ public class Application {
 //    }
 
     private void startServiceForAllClients(BaseConfigModel commonConfig) throws IOException, InstantiationException, IllegalAccessException {
-        ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<ZZima.com[PvpHandler, SimpleExceptionHandler>()
+        ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<SimpleExceptionHandler>()
                 .setConfigModel(new PvpConfigReader(cliArgs).getConfig().setCommonConfig(commonConfig))
                 .setCliArgs(cliArgs)
-                .setCoreTcpHandler(PvpHandler.class)
-                .setExceptionHandler(SimpleExceptionHandler.class)
-                .setTcp(false));
+                .setCoreUdpHandler(PvpHandler.class)
+                .setExceptionHandler(SimpleExceptionHandler.class));
     }
 
 //    public ConnectorToMongo getConnectorToMongo() {

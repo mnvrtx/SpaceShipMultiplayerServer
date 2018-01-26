@@ -12,7 +12,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 
 import static com.esotericsoftware.minlog.Log.*;
 
-public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S extends BaseHandlerInSvcToSvc<T>, U extends BaseExceptionHandler> {
+public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S extends BaseTcpHandlerInSvcToSvc<T>, U extends BaseExceptionHandler> {
 
     private boolean svcConnected;
     private S svcToSvcHandler;
@@ -64,7 +64,7 @@ public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S exten
     }
 
     public interface ConnectToServiceCallback {
-        void success(ChannelFuture channelFuture, BaseHandlerInSvcToSvc svcToSvcHandler) throws InstantiationException, IllegalAccessException;
+        void success(ChannelFuture channelFuture, BaseTcpHandlerInSvcToSvc svcToSvcHandler) throws InstantiationException, IllegalAccessException;
         void except(String ip);
     }
 }

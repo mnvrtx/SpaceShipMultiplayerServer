@@ -7,7 +7,7 @@ import com.fogok.dataobjects.ServerState;
 import com.fogok.dataobjects.datastates.ClientState;
 import com.fogok.dataobjects.datastates.ClientToServerDataStates;
 import com.fogok.spaceshipserver.database.DBUtils;
-import com.fogok.spaceshipserver.game.EverybodyObjectsController;
+import com.fogok.pvpserver.logic.game.EverybodyObjectsController;
 import com.fogok.spaceshipserver.utlis.ServerUtil;
 
 import java.io.ByteArrayInputStream;

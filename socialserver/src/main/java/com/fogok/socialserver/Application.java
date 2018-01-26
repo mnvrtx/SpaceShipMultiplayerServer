@@ -34,10 +34,10 @@ public class Application {
 
     private void startServiceForAllClients() throws IOException, InstantiationException, IllegalAccessException {
         ServiceStarter.getInstance().createLog(cliArgs);
-        ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<SocSrvHandler, SimpleExceptionHandler>()
+        ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<SimpleExceptionHandler>()
                 .setConfigModel(new SocSrvConfigReader(cliArgs).getConfig().setCommonConfig(new CommonConfigReader(cliArgs).getConfig()))
                 .setCliArgs(cliArgs)
-                .setCoreTcpHandler(SocSrvHandler.class)
+                .setCoreTcpHandler(SocSrvHandlerTcp.class)
                 .setExceptionHandler(SimpleExceptionHandler.class));
     }
 

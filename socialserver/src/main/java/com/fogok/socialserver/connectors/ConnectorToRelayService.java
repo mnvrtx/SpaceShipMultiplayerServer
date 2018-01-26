@@ -4,7 +4,7 @@ import com.fogok.socialserver.config.SocSrvConfig;
 import com.fogok.spaceshipserver.baseservice.SimpleExceptionHandler;
 import com.fogok.spaceshipserver.utlis.BaseConnectorInSvcToSvc;
 
-public class ConnectorToRelayService extends BaseConnectorInSvcToSvc<SocSrvConfig, SocToRelayHandler, SimpleExceptionHandler> {
+public class ConnectorToRelayService extends BaseConnectorInSvcToSvc<SocSrvConfig, SocToRelayHandlerTcp, SimpleExceptionHandler> {
 
     //region Singleton realization
     private static ConnectorToRelayService instance;
@@ -14,6 +14,6 @@ public class ConnectorToRelayService extends BaseConnectorInSvcToSvc<SocSrvConfi
     //endregion
 
     public ConnectorToRelayService() {
-        super(SocToRelayHandler.class, SimpleExceptionHandler.class);
+        super(SocToRelayHandlerTcp.class, SimpleExceptionHandler.class);
     }
 }

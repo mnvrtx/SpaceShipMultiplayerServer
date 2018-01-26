@@ -4,9 +4,10 @@ import com.fogok.spaceshipserver.config.BaseConfigModel;
 import com.fogok.spaceshipserver.utlis.ExecutorToThreadPool;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public abstract class BaseUdpChannelInboundHandlerAdapter<T extends BaseConfigModel, I> extends SimpleChannelInboundHandler<I> {
+public abstract class BaseTcpChannelInboundHandlerAdapter<T extends BaseConfigModel> extends ChannelInboundHandlerAdapter {
+
     protected ExecutorToThreadPool executorToThreadPool = new ExecutorToThreadPool();
     protected T config;
 

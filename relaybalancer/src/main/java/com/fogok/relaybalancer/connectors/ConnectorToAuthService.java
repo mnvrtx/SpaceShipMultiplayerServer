@@ -4,7 +4,7 @@ import com.fogok.relaybalancer.config.RelayConfig;
 import com.fogok.spaceshipserver.baseservice.SimpleExceptionHandler;
 import com.fogok.spaceshipserver.utlis.BaseConnectorInSvcToSvc;
 
-public class ConnectorToAuthService extends BaseConnectorInSvcToSvc<RelayConfig, RelayToAuthHandler, SimpleExceptionHandler>{
+public class ConnectorToAuthService extends BaseConnectorInSvcToSvc<RelayConfig, RelayToAuthHandlerTcp, SimpleExceptionHandler>{
 
     //region Singleton realization
     private static ConnectorToAuthService instance;
@@ -14,6 +14,6 @@ public class ConnectorToAuthService extends BaseConnectorInSvcToSvc<RelayConfig,
     //endregion
 
     public ConnectorToAuthService() {
-        super(RelayToAuthHandler.class, SimpleExceptionHandler.class);
+        super(RelayToAuthHandlerTcp.class, SimpleExceptionHandler.class);
     }
 }
