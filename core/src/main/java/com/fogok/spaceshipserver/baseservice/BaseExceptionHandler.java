@@ -37,7 +37,7 @@ public abstract class BaseExceptionHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) { //TODO: give memory leak
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) { //TODO: giving memory leak
         ctx.write(msg, promise.addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess()) {
                 error(String.format("Unhandled exception in write: %s", future.cause()));

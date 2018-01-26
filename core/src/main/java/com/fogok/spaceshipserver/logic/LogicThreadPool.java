@@ -7,7 +7,6 @@ import com.fogok.dataobjects.ServerState;
 import com.fogok.dataobjects.datastates.ClientState;
 import com.fogok.dataobjects.datastates.ClientToServerDataStates;
 import com.fogok.spaceshipserver.database.DBUtils;
-import com.fogok.pvpserver.logic.game.EverybodyObjectsController;
 import com.fogok.spaceshipserver.utlis.ServerUtil;
 
 import java.io.ByteArrayInputStream;
@@ -64,7 +63,7 @@ public class LogicThreadPool implements LogicThreadPoolBase{
     private Output output = new Output(new ByteArrayOutputStream());
     private Input input = new Input(new ByteArrayInputStream(new byte[4096]));
 //    private Input input = new Input(new ByteArrayInputStream(new byte[4096]));
-    private EverybodyObjectsController everybodyObjectsController;
+//    private EverybodyObjectsController everybodyObjectsController;
 
     private final HashMap<Integer, LogicData> loginsClients;
 
@@ -81,7 +80,7 @@ public class LogicThreadPool implements LogicThreadPoolBase{
         ScheduledExecutorService service = Executors.newScheduledThreadPool(2);     //вся эта параша выполняется асинхронно, так шо не боимся
         loginsClients = new HashMap<>(1000); //хз как >1к коннектов тут может быть
 
-        everybodyObjectsController = new EverybodyObjectsController();
+//        everybodyObjectsController = new EverybodyObjectsController();
 
         //нет рефактора, все сыро и на коленке, чисто для прототипа!
         service.scheduleAtFixedRate(() -> {                     // responsing EVERY_BODY_POOL
@@ -169,9 +168,7 @@ public class LogicThreadPool implements LogicThreadPoolBase{
 //            case KEEP_ALIVE:
 //
 //                break;
-            case PLAYER_DATA_WITH_CONSOLE_STATE:
 
-                break;
         }
     }
 

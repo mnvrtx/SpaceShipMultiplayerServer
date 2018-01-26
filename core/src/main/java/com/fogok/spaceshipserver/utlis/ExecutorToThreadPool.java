@@ -2,7 +2,6 @@ package com.fogok.spaceshipserver.utlis;
 
 import com.fogok.dataobjects.transactions.utils.BaseTransactionReader;
 
-import java.net.DatagramPacket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,13 +22,9 @@ public class ExecutorToThreadPool {
         });
     }
 
-    public void datagramExecute(final BaseTransactionReader transactionReader, final Channel channel, final DatagramPacket datagramPacket){
-        service.submit(() -> {
-            long startTime = System.currentTimeMillis();
-            debug("Submit new read datagram inform from channel: ");
-            transactionReader.readByteBufFromChannel(channel, datagramPacket);
-            debug(String.format("Complete read from channel - %sms", System.currentTimeMillis() - startTime));
-        });
+
+    public void execute(Runnable runnable) {
+        service.submit(runnable);
     }
 
     public void shutDownThreads(){
