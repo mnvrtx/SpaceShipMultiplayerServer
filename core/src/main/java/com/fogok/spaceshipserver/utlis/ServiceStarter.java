@@ -20,6 +20,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 import static com.esotericsoftware.minlog.Log.error;
@@ -167,10 +168,10 @@ public class ServiceStarter {
                             @Override
                             protected void initChannel(NioDatagramChannel ch) throws Exception {
                                 ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
-                                ch.pipeline().addLast(new LoggingHandler());
                                 BaseUdpChannelInboundHandlerAdapter coreHandler = serviceParamsBuilder.coreUdpHandler.newInstance();
                                 coreHandler.init(specificConfigWithCommonConfig = serviceParamsBuilder.specificConfigWithCommonConfig);
                                 ch.pipeline().addLast(coreHandler);
+                                ch.pipeline().addLast(new LoggingHandler(LogLevel.TRACE));
                                 ch.pipeline().addLast(serviceParamsBuilder.exceptionHandler.newInstance());
                             }
                         });
