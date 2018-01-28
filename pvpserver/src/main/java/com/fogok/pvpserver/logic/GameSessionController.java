@@ -7,18 +7,25 @@ import io.netty.channel.ChannelFutureListener;
 
 public class GameSessionController {
 
-    public HashMap<String, GameSession> gameSessions = new HashMap<>();
+    //region Singleton realization
+    private static GameSessionController instance;
+    public static GameSessionController getInstance() {
+        return instance == null ? instance = new GameSessionController() : instance;
+    }
+    //endregion
+
+    private HashMap<String, GameSession> gameSessions = new HashMap<>();
 
     public GameSessionController() {
-
+        createSession("qweqwdgqfqwf");
     }
 
     public void createSession(String idSession){
         gameSessions.put(idSession, new GameSession(2));
     }
 
-    public void addPlayerToSession(String idSession, String idPlayer, Channel player){
-        getGameSessions(idSession).connectPlayer(idPlayer, new GameSession.PlayerInformation(player, "test" /*TODO: connect to mongo and get nick*/));
+    public void addPlayerToSession(String idSession, String authPlayerToken, Channel playerCh){
+        getGameSessions(idSession).connectPlayer(authPlayerToken, new GameSession.PlayerInformation(playerCh /*TODO: connect to mongo and get nick*/));
     }
 
     public void completeSession(final String idSession) {

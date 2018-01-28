@@ -9,13 +9,17 @@ public class GameSession {
 
     private int countPlayersConnected;
     private int countPlayersRequered;
+    private boolean isGameStarted;
 
+    /**
+     * PlayerInformation contains channel to client and loading status
+     * maybe will add to this other params
+     */
     public static class PlayerInformation{
         private Channel channel;
         private boolean isLoadingPlayerComplete; //if player ready to start game
-        private String nickName;
 
-        public PlayerInformation(Channel channel, String nickName) {
+        public PlayerInformation(Channel channel) {
             setChannel(channel);
         }
 
@@ -25,6 +29,7 @@ public class GameSession {
 
         public void setChannel(Channel channel) {
             this.channel = channel;
+            isLoadingPlayerComplete = false;
         }
 
 
@@ -41,10 +46,6 @@ public class GameSession {
         public Channel getChannel() {
             return channel;
         }
-
-        public String getNickName() {
-            return nickName;
-        }
     }
 
     private HashMap<String, PlayerInformation> players;
@@ -54,6 +55,11 @@ public class GameSession {
         players = new HashMap<>(countPlayersRequered);
     }
 
+    public void connectPlayer(String authPlayerToken, PlayerInformation playerInformation) {
+        players.put(authPlayerToken, playerInformation);
+        countPlayersConnected++;
+    }
+
     public ChannelFuture completeSession(){
         for (PlayerInformation playerInformation : players.values()) {
             playerInformation.getChannel().close();
@@ -61,11 +67,8 @@ public class GameSession {
         return null;
     }
 
-    public void connectPlayer(String playerId, PlayerInformation playerInformation) {
-        players.put(playerId, playerInformation);
-    }
-
-    public void diconnectPlayer(String playerId) {
-        players.remove(playerId);
+    public void diconnectPlayer(String authPlayerToken) {
+        players.remove(authPlayerToken);
+        countPlayersConnected--;
     }
 }

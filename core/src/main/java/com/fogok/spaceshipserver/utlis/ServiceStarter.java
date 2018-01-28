@@ -13,7 +13,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.FixedRecvByteBufAllocator;
@@ -88,7 +87,7 @@ public class ServiceStarter {
         Fgkio.logging.createLogSystem(new Logging.LogSystemParams().setAppName(cliArgs.serviceName).setLogLevel(cliArgs.logLevel).setDebug(cliArgs.debug).setLogToConsole(true));
     }
 
-    public <T extends ChannelInboundHandlerAdapter, S extends ChannelDuplexHandler> void startService(final ServiceParamsBuilder<S> serviceParamsBuilder)
+    public <S extends ChannelDuplexHandler> void startService(final ServiceParamsBuilder<S> serviceParamsBuilder)
     {
 
         //region ErrorsCheck
@@ -139,8 +138,8 @@ public class ServiceStarter {
 
         try {
 
-            ChannelFuture future;
 
+            ChannelFuture future;
             if (serviceParamsBuilder.tcp) {
                 ServerBootstrap boot = new ServerBootstrap();
                 boot.group(bossGroup, workerGroup)
@@ -157,10 +156,13 @@ public class ServiceStarter {
                             }
                         });
                 future = boot.bind(overrideIp, port).sync();
+                info(String.format("Start service %s success with %s !", serviceParamsBuilder.cliArgs.serviceName, future.channel().localAddress()));
+                future.channel().closeFuture().sync();
             } else {
                 Bootstrap boot = new Bootstrap();
                 boot.group(workerGroup)
                         .channel(NioDatagramChannel.class)
+//                        .option(ChannelOption.SO_BROADCAST, true)
                         .handler(new ChannelInitializer<NioDatagramChannel>() {
                             @Override
                             protected void initChannel(NioDatagramChannel ch) throws Exception {
@@ -173,11 +175,11 @@ public class ServiceStarter {
                             }
                         });
                 future = boot.bind(overrideIp, port).sync();
+                info(String.format("Start service %s success with %s !", serviceParamsBuilder.cliArgs.serviceName, overrideIp + ":" + portStr));
+                future.channel().closeFuture().sync();
             }
 
 
-            info(String.format("Start service %s success with %s !", serviceParamsBuilder.cliArgs.serviceName, future.channel().localAddress()));
-            future.channel().closeFuture().sync();
         } catch (Exception e) {
             error(String.format("Error start service %s !", serviceParamsBuilder.cliArgs.serviceName), e);
         } finally {
