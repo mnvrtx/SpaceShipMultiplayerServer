@@ -14,6 +14,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.FixedRecvByteBufAllocator;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -164,6 +165,7 @@ public class ServiceStarter {
                 boot.group(workerGroup)
                         .channel(NioDatagramChannel.class)
 //                        .option(ChannelOption.SO_BROADCAST, true)
+                        .option(ChannelOption.SO_REUSEADDR, true)
                         .handler(new ChannelInitializer<NioDatagramChannel>() {
                             @Override
                             protected void initChannel(NioDatagramChannel ch) throws Exception {

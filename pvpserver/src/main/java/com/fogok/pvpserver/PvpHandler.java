@@ -2,13 +2,18 @@ package com.fogok.pvpserver;
 
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.fogok.dataobjects.GameObjectsType;
 import com.fogok.dataobjects.PlayerData;
 import com.fogok.dataobjects.gameobjects.ConsoleState;
 import com.fogok.dataobjects.transactions.pvp.PvpTransactionHeaderType;
+import com.fogok.dataobjects.utils.EveryBodyPool;
 import com.fogok.dataobjects.utils.Pool;
 import com.fogok.dataobjects.utils.Serialization;
 import com.fogok.pvpserver.config.PvpConfig;
 import com.fogok.spaceshipserver.BaseUdpChannelInboundHandlerAdapter;
+
+import java.io.ByteArrayOutputStream;
+import java.net.InetSocketAddress;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -21,28 +26,39 @@ public class PvpHandler extends BaseUdpChannelInboundHandlerAdapter<PvpConfig, D
 
     @Override
     public void init() {
-        Serialization.getInstance().setPlayerData(new PlayerData(new ConsoleState()));
+        Serialization.instance.setPlayerData(new PlayerData(new ConsoleState()));
+        EveryBodyPool everyBodyPool = new EveryBodyPool(100);
+
+        everyBodyPool.obtain(GameObjectsType.SimpleBluster);
+        everyBodyPool.obtain(GameObjectsType.SimpleBluster);
+        everyBodyPool.obtain(GameObjectsType.SimpleBluster);
+
+        everyBodyPool.obtain(GameObjectsType.SimpleShip);
+
+        Serialization.instance.setEveryBodyPoolToSync(everyBodyPool);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket datagramPacket) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket recievedDatagramPacket) throws Exception {
         DatagramChannel datagramChannel = (DatagramChannel) ctx.channel();
 
-        info("Read data from - " + datagramPacket.sender());
+        info("Read data from - " + recievedDatagramPacket.sender());
 
         ReadClientRunnable readClientRunnable = clientReaders.obtain();
-        byte[] response = new byte[datagramPacket.content().readableBytes()];
-        datagramPacket.content().readBytes(response);
+
+        byte[] response = new byte[recievedDatagramPacket.content().readableBytes()];
+        recievedDatagramPacket.content().readBytes(response);
 
         readClientRunnable.bytes = response;
         readClientRunnable.datagramChannel = datagramChannel;
-        readClientRunnable.recievedDatagramPacket = datagramPacket;
+        readClientRunnable.clientReaders = clientReaders;
+
+        readClientRunnable.setInetSocketAddress(recievedDatagramPacket.sender());
 
         executorToThreadPool.execute(readClientRunnable);
     }
@@ -57,15 +73,28 @@ public class PvpHandler extends BaseUdpChannelInboundHandlerAdapter<PvpConfig, D
 
     private static class ReadClientRunnable implements Runnable, Pool.Poolable{
 
+        private Pool<ReadClientRunnable> clientReaders;
+
         private byte[] bytes;
         private DatagramChannel datagramChannel;
-        private DatagramPacket recievedDatagramPacket;
+
+        private Input input = new Input();
+        private Output output = new Output(new ByteArrayOutputStream());
+
+        private InetSocketAddress inetSocketAddress;
+
+        private void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
+            if (inetSocketAddress.equals(this.inetSocketAddress))
+                return;
+            this.inetSocketAddress = inetSocketAddress;
+        }
 
         @Override
         public void run() {
             info(String.format("Start read response bytes with %s lenght", bytes.length));
-            Input input = Serialization.getInstance().getInput();
+
             input.setBuffer(bytes);
+            DatagramPacket datagramPacketToSend;
             switch (PvpTransactionHeaderType.values()[input.readInt(true)]) {
                 case START_DATA:
                     String sessionId = input.readString();
@@ -74,17 +103,30 @@ public class PvpHandler extends BaseUdpChannelInboundHandlerAdapter<PvpConfig, D
                     info(sessionId);
                     info(authPlayerToken);
 
-                    Output output = Serialization.getInstance().getCleanedOutput();
+                    output.clear();
                     output.writeInt(PvpTransactionHeaderType.START_DATA.ordinal(), true);
                     output.writeBoolean(true);
 
-                    datagramChannel.writeAndFlush(new DatagramPacket(Unpooled.copiedBuffer(output.getBuffer()), recievedDatagramPacket.sender()));
+                    datagramPacketToSend = new DatagramPacket(Unpooled.buffer(), inetSocketAddress);
+                    datagramPacketToSend.content().writeBytes(output.getBuffer());
+                    datagramChannel.writeAndFlush(datagramPacketToSend);
+                    info(String.format("Complete read and write - %s", datagramPacketToSend.content()));
                     break;
                 case CONSOLE_STATE:
-                    Serialization.getInstance().getKryo().readObject(input, PlayerData.class);
-                    info("Console state from client - " + Serialization.getInstance().getPlayerData());
+                    Serialization.instance.getKryo().readObject(input, PlayerData.class);
+                    info("Console state from client - " + Serialization.instance.getPlayerData());
+
+                    output.clear();
+                    output.writeInt(PvpTransactionHeaderType.EVERYBODY_POOL.ordinal(), true);
+                    Serialization.instance.getKryo().writeObject(output, Serialization.instance.getEveryBodyPool());
+
+                    datagramPacketToSend = new DatagramPacket(Unpooled.buffer(), inetSocketAddress);
+                    datagramPacketToSend.content().writeBytes(output.getBuffer());
+                    datagramChannel.writeAndFlush(datagramPacketToSend);
+                    info(String.format("Send everyBodyPool - %s", Serialization.instance.getEveryBodyPool()));
                     break;
             }
+            clientReaders.free(this);
         }
 
         @Override
