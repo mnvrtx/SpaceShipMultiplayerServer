@@ -22,7 +22,6 @@ public class ExecutorToThreadPool {
         });
     }
 
-
     public void execute(Runnable runnable) {
         service.submit(runnable);
     }

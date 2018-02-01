@@ -6,6 +6,8 @@ import com.fogok.spaceshipserver.utlis.ExecutorToThreadPool;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import static com.esotericsoftware.minlog.Log.info;
+
 public abstract class BaseUdpChannelInboundHandlerAdapter<T extends BaseConfigModel, I> extends SimpleChannelInboundHandler<I> {
     protected ExecutorToThreadPool executorToThreadPool = new ExecutorToThreadPool();
     protected T config;
@@ -18,6 +20,7 @@ public abstract class BaseUdpChannelInboundHandlerAdapter<T extends BaseConfigMo
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) {
         executorToThreadPool.shutDownThreads();
+        info("executorToThreadPool shutdown");
     }
 
     public abstract void init();

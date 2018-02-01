@@ -14,14 +14,12 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.FixedRecvByteBufAllocator;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 import static com.esotericsoftware.minlog.Log.error;
@@ -165,7 +163,7 @@ public class ServiceStarter {
                 boot.group(workerGroup)
                         .channel(NioDatagramChannel.class)
 //                        .option(ChannelOption.SO_BROADCAST, true)
-                        .option(ChannelOption.SO_REUSEADDR, true)
+//                        .option(ChannelOption.SO_REUSEADDR, true)
                         .handler(new ChannelInitializer<NioDatagramChannel>() {
                             @Override
                             protected void initChannel(NioDatagramChannel ch) throws Exception {
@@ -173,7 +171,7 @@ public class ServiceStarter {
                                 BaseUdpChannelInboundHandlerAdapter coreHandler = serviceParamsBuilder.coreUdpHandler.newInstance();
                                 coreHandler.init(specificConfigWithCommonConfig = serviceParamsBuilder.specificConfigWithCommonConfig);
                                 ch.pipeline().addLast(coreHandler);
-                                ch.pipeline().addLast(new LoggingHandler(LogLevel.TRACE));
+//                                ch.pipeline().addLast(new LoggingHandler(LogLevel.TRACE));
                                 ch.pipeline().addLast(serviceParamsBuilder.exceptionHandler.newInstance());
                             }
                         });

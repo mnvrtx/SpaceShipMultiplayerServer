@@ -28,7 +28,7 @@ public abstract class UnionControllerBase {
             Array<GameObject> activeObjects = everyBodyPool.getAllObjectsFromType(objectType);  //берём все объекты одного типа
             int len = activeObjects.size;
             for (int i = len; --i >= 0;)
-                handleLogic(activeObjects.get(i), handleOneObject(activeObjects.get(i)));
+                handleLogic(activeObjects.get(i), handleOneObject(activeObjects.get(i), i));
         }
 
 //        if (DebugGUI.DEBUG)
@@ -72,5 +72,5 @@ public abstract class UnionControllerBase {
      * @param handledObject объект, по которому прошли
      * @return находится ли объект в игре, или же внутри пула (нужно вернуть true, чтобы добавить объект в пул снова (тобтшь вернуть тру, если объект пропал а))
      */
-    protected abstract boolean handleOneObject(GameObject handledObject);
+    protected abstract boolean handleOneObject(GameObject handledObject, int i);
 }

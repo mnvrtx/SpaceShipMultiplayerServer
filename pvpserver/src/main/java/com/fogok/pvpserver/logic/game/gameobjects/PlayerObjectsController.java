@@ -1,6 +1,5 @@
 package com.fogok.pvpserver.logic.game.gameobjects;
 
-import com.fogok.dataobjects.GameObjectsType;
 import com.fogok.dataobjects.utils.EveryBodyPool;
 import com.fogok.pvpserver.logic.game.Controller;
 import com.fogok.pvpserver.logic.game.gameobjects.ships.simpleship.SimpleShipObjectController;
@@ -16,10 +15,10 @@ public class PlayerObjectsController implements Controller {
     private UnionControllerSimpleShipObjs unionControllerSimpleShipObjs;
 
     public PlayerObjectsController(DemolishingObjectsController demolishingObjectsController, EveryBodyPool everyBodyPool) {
-        SimpleShipObjectController simpleShipObjectController = new SimpleShipObjectController(demolishingObjectsController.getBlusterBulletController());
-        unionControllerSimpleShipObjs = new UnionControllerSimpleShipObjs(everyBodyPool, simpleShipObjectController);
-        simpleShipObjectController.setHandledObject(everyBodyPool.obtain(GameObjectsType.SimpleShip));
-        simpleShipObjectController.add(0f, 0f);
+        SimpleShipObjectController simpleShipObjectController = new SimpleShipObjectController();
+        unionControllerSimpleShipObjs = new UnionControllerSimpleShipObjs(everyBodyPool, simpleShipObjectController, demolishingObjectsController);
+//        simpleShipObjectController.setHandledObject(everyBodyPool.obtain(GameObjectsType.SimpleShip));
+//        simpleShipObjectController.add(0f, 0f);
     }
 
     @Override

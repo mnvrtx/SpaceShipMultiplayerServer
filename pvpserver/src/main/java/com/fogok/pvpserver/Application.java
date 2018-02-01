@@ -1,5 +1,6 @@
 package com.fogok.pvpserver;
 
+import com.fogok.dataobjects.utils.Serialization;
 import com.fogok.pvpserver.config.PvpConfigReader;
 import com.fogok.spaceshipserver.baseservice.SimpleExceptionHandler;
 import com.fogok.spaceshipserver.config.BaseConfigModel;
@@ -43,6 +44,11 @@ public class Application {
 //    }
 
     private void startServiceForAllClients(BaseConfigModel commonConfig) throws IOException, InstantiationException, IllegalAccessException {
+        //activate all requered instance
+        Serialization.instance.name();
+
+
+        //start listener to udp connects
         ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<SimpleExceptionHandler>()
                 .setConfigModel(new PvpConfigReader(cliArgs).getConfig().setCommonConfig(commonConfig))
                 .setCliArgs(cliArgs)

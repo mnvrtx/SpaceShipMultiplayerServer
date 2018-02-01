@@ -2,12 +2,14 @@ package com.fogok.pvpserver.logic.game.gameobjects.ships;
 
 import com.fogok.dataobjects.GameObject;
 import com.fogok.dataobjects.gameobjects.ConsoleState;
+import com.fogok.dataobjects.gameobjects.Weapon;
 import com.fogok.dataobjects.gameobjects.ships.ShipObjectBase;
 import com.fogok.dataobjects.utils.GMUtils;
 import com.fogok.pvpserver.logic.game.ObjectController;
-import com.fogok.pvpserver.logic.game.gameobjects.weapons.Weapon;
 
-import static com.fogok.dataobjects.gameobjects.ships.ShipObjectBase.AdditParams.*;
+import static com.fogok.dataobjects.gameobjects.ships.ShipObjectBase.AdditParams.DIRECTION;
+import static com.fogok.dataobjects.gameobjects.ships.ShipObjectBase.AdditParams.SIZE;
+import static com.fogok.dataobjects.gameobjects.ships.ShipObjectBase.AdditParams.SPEED;
 
 public abstract class ShipObjectControllerBase implements ObjectController {
 
@@ -19,19 +21,15 @@ public abstract class ShipObjectControllerBase implements ObjectController {
     private Weapon weapon;
     private ConsoleState consoleState;
 
-    public ShipObjectControllerBase(ConsoleState consoleState, Weapon weapon) {
-        this.weapon = weapon;
-        this.consoleState = consoleState;
+    public ShipObjectControllerBase() {
+
     }
 
     @Override
     public void setHandledObject(GameObject handledObject) {
         shipObjectBase = (ShipObjectBase) handledObject;
-    }
-
-    public void add(float x, float y){
-        shipObjectBase.setPosition(x, y);
-        shipObjectBase.setAdditParam(1.4f, SIZE);
+        weapon = shipObjectBase.getWeapon();
+        consoleState = shipObjectBase.getConsoleState();
     }
 
     @Override
@@ -62,7 +60,11 @@ public abstract class ShipObjectControllerBase implements ObjectController {
         }
 
 //        DebugGUI.DEBUG_TEXT = "{" + currentDirection + "} " + "{" + targetDir + "} ";
-        shipObjectBase.setPosition(shipObjectBase.getX() + GMUtils.getNextX(shipObjectBase.getAdditParam(SPEED), shipObjectBase.getAdditParam(DIRECTION) + 90) * 0.016f/* TODO: сюда прокинуть правильную дельту */, shipObjectBase.getY() + GMUtils.getNextY(shipObjectBase.getAdditParam(SPEED), shipObjectBase.getAdditParam(DIRECTION) + 90) * 0.016f/* TODO: сюда прокинуть правильную дельту */);
+        shipObjectBase.setPosition(
+                shipObjectBase.getX() + GMUtils.getNextX(shipObjectBase.getAdditParam(SPEED),
+                        shipObjectBase.getAdditParam(DIRECTION) + 90) * 0.016f/* TODO: сюда прокинуть правильную дельту */,
+                shipObjectBase.getY() + GMUtils.getNextY(shipObjectBase.getAdditParam(SPEED),
+                        shipObjectBase.getAdditParam(DIRECTION) + 90) * 0.016f/* TODO: сюда прокинуть правильную дельту */);
 
         fireLogicHandle();
     }

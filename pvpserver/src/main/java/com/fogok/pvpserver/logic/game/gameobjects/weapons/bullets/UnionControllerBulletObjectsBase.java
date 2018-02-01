@@ -2,10 +2,10 @@ package com.fogok.pvpserver.logic.game.gameobjects.weapons.bullets;
 
 import com.fogok.dataobjects.GameObject;
 import com.fogok.dataobjects.GameObjectsType;
+import com.fogok.dataobjects.gameobjects.Weapon;
 import com.fogok.dataobjects.gameobjects.weapons.BulletObjectBase;
 import com.fogok.dataobjects.utils.EveryBodyPool;
 import com.fogok.pvpserver.logic.game.UnionControllerBase;
-import com.fogok.pvpserver.logic.game.gameobjects.weapons.Weapon;
 
 public abstract class UnionControllerBulletObjectsBase<T extends BulletObjectBase, E extends BulletObjectControllerBase> extends UnionControllerBase implements Weapon {
 
@@ -30,7 +30,7 @@ public abstract class UnionControllerBulletObjectsBase<T extends BulletObjectBas
     }
 
     @Override
-    protected boolean handleOneObject(GameObject handledObject) {
+    protected boolean handleOneObject(GameObject handledObject, int i) {
         @SuppressWarnings("unchecked")
         T bullet = (T) handledObject;   //приводим к нужному нам типу
         bulletObjectController.setHandledObject(bullet);

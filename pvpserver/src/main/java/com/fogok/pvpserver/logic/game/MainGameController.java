@@ -5,7 +5,7 @@ import com.fogok.dataobjects.utils.EveryBodyPool;
 import com.fogok.pvpserver.logic.game.gameobjects.PlayerObjectsController;
 import com.fogok.pvpserver.logic.game.gameobjects.weapons.DemolishingObjectsController;
 
-public class EverybodyObjectsController implements Controller {
+public class MainGameController implements Controller {
 
     private DemolishingObjectsController demolishingObjectsController;
     private PlayerObjectsController playerObjectsController;
@@ -16,7 +16,7 @@ public class EverybodyObjectsController implements Controller {
     private final EveryBodyPool everyBodyObjectsPool;
     //endregion
 
-    public EverybodyObjectsController() {
+    public MainGameController() {
         everyBodyObjectsPool = new EveryBodyPool(bufferSize);
         demolishingObjectsController = new DemolishingObjectsController(everyBodyObjectsPool);
         playerObjectsController = new PlayerObjectsController(demolishingObjectsController, everyBodyObjectsPool);
@@ -24,6 +24,7 @@ public class EverybodyObjectsController implements Controller {
 
     @Override
     public void handle(boolean pause) {
+//        info("Handle Main Room");
         demolishingObjectsController.handle(pause);
         playerObjectsController.handle(pause);
     }
