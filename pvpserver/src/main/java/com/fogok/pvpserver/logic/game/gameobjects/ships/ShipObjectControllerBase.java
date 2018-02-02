@@ -42,7 +42,7 @@ public abstract class ShipObjectControllerBase implements ObjectController {
 
         boolean isMoving = x != 0 || y != 0;
 
-        float maxSpeed = 0.14f;
+        float maxSpeed = 10f;
         float speedVelocityPercent = 0.03f;
         shipObjectBase.setAdditParam(shipObjectBase.getAdditParam(SPEED) + (isMoving ? maxSpeed * speedVelocityPercent : maxSpeed * -speedVelocityPercent), SPEED);
 
@@ -56,15 +56,15 @@ public abstract class ShipObjectControllerBase implements ObjectController {
             targetDir = GMUtils.getDeg(shipObjectBase.getX() + x, shipObjectBase.getY() + y, shipObjectBase.getX(), shipObjectBase.getY()) + 90;
             targetDir += targetDir > 360 ? -360 : 0;
             shipObjectBase.setAdditParam(GMUtils.lerpDirection(shipObjectBase.getAdditParam(DIRECTION),
-                    targetDir, 6 * 0.016f/* TODO: сюда прокинуть правильную дельту */ * (shipObjectBase.getAdditParam(SPEED) / maxSpeed)), DIRECTION);
+                    targetDir, 360 * 0.016f * (shipObjectBase.getAdditParam(SPEED) / maxSpeed)), DIRECTION);
         }
 
 //        DebugGUI.DEBUG_TEXT = "{" + currentDirection + "} " + "{" + targetDir + "} ";
         shipObjectBase.setPosition(
-                shipObjectBase.getX() + GMUtils.getNextX(shipObjectBase.getAdditParam(SPEED),
-                        shipObjectBase.getAdditParam(DIRECTION) + 90) * 0.016f/* TODO: сюда прокинуть правильную дельту */,
-                shipObjectBase.getY() + GMUtils.getNextY(shipObjectBase.getAdditParam(SPEED),
-                        shipObjectBase.getAdditParam(DIRECTION) + 90) * 0.016f/* TODO: сюда прокинуть правильную дельту */);
+                shipObjectBase.getX() + GMUtils.getNextX(shipObjectBase.getAdditParam(SPEED) * 0.016f,
+                        shipObjectBase.getAdditParam(DIRECTION) + 90),
+                shipObjectBase.getY() + GMUtils.getNextY(shipObjectBase.getAdditParam(SPEED) * 0.016f,
+                        shipObjectBase.getAdditParam(DIRECTION) + 90));
 
         fireLogicHandle();
     }

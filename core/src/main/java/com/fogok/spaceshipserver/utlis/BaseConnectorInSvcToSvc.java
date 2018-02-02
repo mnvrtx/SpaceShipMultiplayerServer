@@ -45,7 +45,7 @@ public abstract class BaseConnectorInSvcToSvc<T extends BaseConfigModel, S exten
                                 warn("Connection to svc dropped");
                                 svcConnected = false;
                             });
-                        }, ipComponents.getIp(), ipComponents.getPort());
+                        }, ipComponents.getIp(), ipComponents.getPort(), true);
             } catch (InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }

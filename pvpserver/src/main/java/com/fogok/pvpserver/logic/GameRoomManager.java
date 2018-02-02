@@ -158,7 +158,7 @@ public enum GameRoomManager {
 //                        info(GameRoomManager.instance.ioActionPool.poolStatus());
 
                         try {
-                            Thread.sleep(16);
+                            Thread.sleep(25);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                             cancel();

@@ -47,7 +47,6 @@ public class Application {
         //activate all requered instance
         Serialization.instance.name();
 
-
         //start listener to udp connects
         ServiceStarter.getInstance().startService(new ServiceStarter.ServiceParamsBuilder<SimpleExceptionHandler>()
                 .setConfigModel(new PvpConfigReader(cliArgs).getConfig().setCommonConfig(commonConfig))
