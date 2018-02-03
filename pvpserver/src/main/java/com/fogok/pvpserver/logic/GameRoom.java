@@ -8,7 +8,10 @@ import com.fogok.dataobjects.gameobjects.ships.SimpleShipObject;
 import com.fogok.dataobjects.utils.EveryBodyPool;
 import com.fogok.pvpserver.logic.game.MainGameController;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
+
+import static com.esotericsoftware.minlog.Log.info;
 
 public class GameRoom {
 
@@ -62,7 +65,7 @@ public class GameRoom {
         isGameStarted = true; //TODO: timered
     }
 
-    public PlayerInformation connectPlayer() {
+    public PlayerInformation connectPlayer(InetSocketAddress inetSocketAddress) {
         PlayerData playerData = new PlayerData((ConsoleState) everyBodyPool.obtain(GameObjectsType.ConsoleState));
         //hardCode - to future create balance method
         SimpleShipObject simpleShipObject = (SimpleShipObject) everyBodyPool.obtain(GameObjectsType.SimpleShip);
@@ -75,6 +78,7 @@ public class GameRoom {
         if (countPlayersConnected == countPlayersRequered) {
             isGameStarted = true;
         }
+        info("Player connected - " + inetSocketAddress);
         return playerInformation;
     }
 

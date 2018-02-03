@@ -17,7 +17,7 @@ public class PlayerObjectsController implements Controller {
     public PlayerObjectsController(DemolishingObjectsController demolishingObjectsController, EveryBodyPool everyBodyPool) {
         SimpleShipObjectController simpleShipObjectController = new SimpleShipObjectController();
         unionControllerSimpleShipObjs = new UnionControllerSimpleShipObjs(everyBodyPool, simpleShipObjectController, demolishingObjectsController);
-//        simpleShipObjectController.setHandledObject(everyBodyPool.obtain(GameObjectsType.SimpleShip));
+//        simpleShipObjectController.setHandledObject(everyBodyPool.syncObtain(GameObjectsType.SimpleShip));
 //        simpleShipObjectController.add(0f, 0f);
     }
 

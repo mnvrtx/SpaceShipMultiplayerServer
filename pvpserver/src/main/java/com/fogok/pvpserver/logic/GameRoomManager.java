@@ -11,9 +11,9 @@ import com.fogok.spaceshipserver.utlis.ExecutorToThreadPool;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.socket.DatagramChannel;
@@ -54,12 +54,11 @@ public enum GameRoomManager {
     public static class LogicHandler implements Runnable{
 
         /**Key - address from last datagram packet... Refs to all players*/
-        private ConcurrentHashMap<String, GameRoom.PlayerInformation> allPlayersInformation = new ConcurrentHashMap<>();
+        private HashMap<String, GameRoom.PlayerInformation> allPlayersInformation = new HashMap<>();
         /**Key - idRoom*/
-        private ConcurrentHashMap<String, GameRoom> gameRooms = new ConcurrentHashMap<>();
+        private HashMap<String, GameRoom> gameRooms = new HashMap<>();
 
-        private List<IOAction> ioQueue = Collections.synchronizedList(new ArrayList<IOAction>());
-        private List<IOAction> ioQueueCopy = Collections.synchronizedList(new ArrayList<IOAction>());
+        private List<IOAction> ioQueue = new ArrayList<>();
 
         private final DatagramChannel cleanedChannel;
         private LogicHandler(DatagramChannel cleanedChannel) {
@@ -68,16 +67,8 @@ public enum GameRoomManager {
 
         public static class IOAction implements Pool.Poolable{
 
-            private byte[] receivedBytes;
-            private InetSocketAddress inetSocketAddress;
-
-            public void setReceivedBytes(byte[] receivedBytes) {
-                this.receivedBytes = receivedBytes;
-            }
-
-            public void setInetSocketAddress(InetSocketAddress inetSocketAddress) {
-                this.inetSocketAddress = inetSocketAddress;
-            }
+            public byte[] receivedBytes;
+            public InetSocketAddress inetSocketAddress;
 
             private GameRoom gameRoom;
             private boolean needToPostLogic;
@@ -86,10 +77,11 @@ public enum GameRoomManager {
             public void reset() {
 
             }
-        }
 
-        private void balance(){
-
+            @Override
+            public String toString() {
+                return inetSocketAddress + "";
+            }
         }
 
         private boolean interrupted;
@@ -98,72 +90,87 @@ public enum GameRoomManager {
         public void run() {
             while (!interrupted) {
                 try {
-                    synchronized (cleanedChannel) {
-                        //before logic
-                        for (IOAction action : ioQueue) {
-//                            info(String.format("Start action handle - %s, %s", action.inetSocketAddress, Arrays.toString(action.receivedBytes)));
 
-                            Input receivedData = Serialization.instance.getInput();
-                            receivedData.setBuffer(action.receivedBytes);
-                            switch (PvpTransactionHeaderType.values()[receivedData.readInt(true)]) {
-                                case START_DATA:
+                    //before logic
 
-                                    String idRoom = receivedData.readString();
-                                    String authPlayerToken = receivedData.readString();
+                    IOAction[] ioQueue;
+                    synchronized (this) {
+                        ioQueue = Arrays.copyOf(this.ioQueue.toArray(new IOAction[this.ioQueue.size()]), this.ioQueue.size());
+                        this.ioQueue.clear();
+//                        if (ioQueue.length != 0)
+//                            info(String.format("Added - %s actions", ioQueue.length));
+                    }
 
-//                                    info(String.format("Client sent START_DATA\n idRoom: %s authToken: %s", idRoom, authPlayerToken));
+                    for (IOAction action : ioQueue) {
+//                        info("Read - " + action.inetSocketAddress);
+                        Input receivedData = Serialization.instance.getInput();
+                        receivedData.setBuffer(action.receivedBytes);
+                        switch (PvpTransactionHeaderType.values()[receivedData.readInt(true)]) {
+                            case START_DATA:
 
-                                    //TODO: authPlayerToken requires checks (help to this - mongo connector)
-                                    allPlayersInformation.put(getKeyFromAddress(action.inetSocketAddress), gameRooms.get(idRoom).connectPlayer());
+                                String idRoom = receivedData.readString();
+                                String authPlayerToken = receivedData.readString();
 
-                                    Output willPutData = Serialization.instance.getCleanedOutput();
-                                    willPutData.writeInt(PvpTransactionHeaderType.START_DATA.ordinal(), true);
-                                    willPutData.writeBoolean(true);
 
-                                    cleanedChannel.writeAndFlush(new DatagramPacket(Unpooled.buffer().writeBytes(willPutData.getBuffer()), action.inetSocketAddress));
-//                                    info(String.format("Sent OK to - %s", action.inetSocketAddress));
-                                    action.needToPostLogic = false;
-                                    break;
-                                case CONSOLE_STATE:
+                                //TODO: authPlayerToken requires checks (help to this - mongo connector)
+                                if (allPlayersInformation.containsKey(getKeyFromAddress(action.inetSocketAddress)))
+                                    continue;
+
+                                allPlayersInformation.put(getKeyFromAddress(action.inetSocketAddress),
+                                        gameRooms.get(idRoom).connectPlayer(action.inetSocketAddress));
+
+                                Output willPutData = Serialization.instance.getCleanedOutput();
+                                willPutData.writeInt(PvpTransactionHeaderType.START_DATA.ordinal(), true);
+                                willPutData.writeBoolean(true);
+
+                                cleanedChannel.writeAndFlush(new DatagramPacket(Unpooled.buffer().writeBytes(willPutData.getBuffer()), action.inetSocketAddress));
+                                action.needToPostLogic = false;
+                                break;
+                            case CONSOLE_STATE:
+                                if (allPlayersInformation.containsKey(getKeyFromAddress(action.inetSocketAddress))) {
                                     Serialization.instance.setPlayerData(allPlayersInformation.get(getKeyFromAddress(action.inetSocketAddress)).getPlayerData());
                                     Serialization.instance.getKryo().readObject(receivedData, PlayerData.class);
 
-//                                    info(String.format("Client sent CONSOLE_STATE\n%s", Serialization.instance.getPlayerData()));
                                     action.needToPostLogic = true;
-                                    break;
-                            }
-                            action.gameRoom = allPlayersInformation.get(getKeyFromAddress(action.inetSocketAddress)).getGameRoom();
-                        }
-
-                        for (GameRoom gameRoom : gameRooms.values())
-                            gameRoom.handle();
-
-                        //post logic
-                        for (IOAction action : ioQueue) {
-                            if (action.needToPostLogic) {
-                                Output willPutData = Serialization.instance.getCleanedOutput();
-                                willPutData.writeInt(PvpTransactionHeaderType.EVERYBODY_POOL.ordinal(), true);
-
-                                Serialization.instance.getKryo().writeObject(willPutData, action.gameRoom.getGameController().getEveryBodyObjectsPool());
-
-                                cleanedChannel.writeAndFlush(new DatagramPacket(Unpooled.buffer().writeBytes(willPutData.getBuffer()), action.inetSocketAddress));
-
-//                                info(String.format("Everybodypool(%s) sent to %s", action.gameRoom.getGameController().getEveryBodyObjectsPool(), action.inetSocketAddress));
-                            }
-                        }
-
-                        ioQueue.iterator().forEachRemaining(ioAction -> GameRoomManager.instance.ioActionPool.free(ioAction));
-                        ioQueue.clear();
-
-//                        info(GameRoomManager.instance.ioActionPool.poolStatus());
-
-                        try {
-                            Thread.sleep(25);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            cancel();
+                                    action.gameRoom = allPlayersInformation.get(getKeyFromAddress(action.inetSocketAddress)).getGameRoom();
+                                }else
+                                    info("WTF");
+                                break;
                         }
                     }
+
+
+                    for (GameRoom gameRoom : gameRooms.values())
+                        gameRoom.handle();
+
+
+                    //post logic
+                    for (IOAction action : ioQueue) {
+                        if (action.needToPostLogic) {
+//                            info("Write - " + action.inetSocketAddress);
+                            Output willPutData = Serialization.instance.getCleanedOutput();
+                            willPutData.writeInt(PvpTransactionHeaderType.EVERYBODY_POOL.ordinal(), true);
+
+                            Serialization.instance.getKryo().writeObject(willPutData, action.gameRoom.getGameController().getEveryBodyObjectsPool());
+
+                            cleanedChannel.writeAndFlush(new DatagramPacket(Unpooled.buffer().writeBytes(willPutData.getBuffer()), action.inetSocketAddress));
+                        }
+                    }
+
+                    synchronized (this) {
+//                        if (ioQueue.length != 0)
+//                            info("free all... completed logic");
+                        for (IOAction action : ioQueue)
+                            GameRoomManager.instance.ioActionPool.freeSync(action);
+                    }
+
+                    try {
+                        Thread.sleep(16);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        cancel();
+                    }
+
                 } catch (Exception e) {
                     error("Error in logic thread #1 - ");
                     e.printStackTrace();
@@ -177,11 +184,14 @@ public enum GameRoomManager {
             interrupted = true;
         }
 
-        private ConcurrentHashMap<String, GameRoom> getGameRooms() {
+        private HashMap<String, GameRoom> getGameRooms() {
             return gameRooms;
         }
 
-        public void addIoAction(IOAction action) {
+        public synchronized void addIoAction(IOAction action) {
+//            info("add to action");
+            if (ioQueue.stream().anyMatch((a) -> a.inetSocketAddress.equals(action.inetSocketAddress)))
+                ioQueue.removeIf((a) -> a.inetSocketAddress.equals(action.inetSocketAddress));
             ioQueue.add(action);
         }
     }

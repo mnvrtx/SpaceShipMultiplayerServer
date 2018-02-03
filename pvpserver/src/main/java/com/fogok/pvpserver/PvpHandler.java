@@ -3,6 +3,7 @@ package com.fogok.pvpserver;
 import com.fogok.dataobjects.utils.libgdxexternals.Pool;
 import com.fogok.pvpserver.config.PvpConfig;
 import com.fogok.pvpserver.logic.GameRoomManager;
+import com.fogok.pvpserver.logic.GameRoomManager.LogicHandler.IOAction;
 import com.fogok.spaceshipserver.BaseUdpChannelInboundHandlerAdapter;
 
 import java.net.InetSocketAddress;
@@ -10,6 +11,8 @@ import java.net.InetSocketAddress;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.DatagramPacket;
+
+import static com.esotericsoftware.minlog.Log.info;
 
 public class PvpHandler extends BaseUdpChannelInboundHandlerAdapter<PvpConfig, DatagramPacket> {
 
@@ -32,30 +35,35 @@ public class PvpHandler extends BaseUdpChannelInboundHandlerAdapter<PvpConfig, D
         //read
         byte[] response = new byte[recievedDatagramPacket.content().readableBytes()];
         recievedDatagramPacket.content().readBytes(response);
-        synchronized (cleanedChannel) {
-            GameRoomManager.instance.getLogicHandler().addIoAction(ioActionPool.obtain(response, recievedDatagramPacket.sender()));
-        }
+        GameRoomManager.instance.getLogicHandler().addIoAction(ioActionPool.obtainSync(response, recievedDatagramPacket.sender()));
     }
 
 
-    private final IOActionPool ioActionPool = new IOActionPool();
+    private IOActionPool ioActionPool = new IOActionPool();
 
-    public static class IOActionPool extends Pool<GameRoomManager.LogicHandler.IOAction>{
+    /**
+     * Thread safe io impl
+     */
+    public static class IOActionPool extends Pool<IOAction>{
         @Override
-        protected GameRoomManager.LogicHandler.IOAction newObject() {
-            return new GameRoomManager.LogicHandler.IOAction();
+        protected IOAction newObject() {
+            return new IOAction();
         }
 
 
-        public GameRoomManager.LogicHandler.IOAction obtain(byte[] response, InetSocketAddress inetSocketAddress) {
-            GameRoomManager.LogicHandler.IOAction ioAction = super.obtain();
-            ioAction.setInetSocketAddress(inetSocketAddress);
-            ioAction.setReceivedBytes(response);
+        public synchronized IOAction obtainSync(byte[] response, InetSocketAddress inetSocketAddress) {
+            IOAction ioAction = super.obtain();
+            ioAction.inetSocketAddress = inetSocketAddress;
+            ioAction.receivedBytes = response;
             return ioAction;
         }
 
-        public String poolStatus(){
-            return String.format("Free objects: %s", getFree());
+        public synchronized void freeSync(IOAction object) {
+            super.free(object);
+        }
+
+        public void poolStatus(){
+            info(String.format("Free objects: %s", getFree()));
         }
     }
 
