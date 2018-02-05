@@ -5,6 +5,26 @@ import java.io.IOException;
 public class Console {
 
     public static void main(String[] args) throws IOException {
+        try
+        {
+            System.out.println("Counting down ...");
+            System.out.print("5");
+            Thread.currentThread().sleep(500);
+            System.out.print("\r          4");
+            Thread.currentThread().sleep(500);
+            System.out.print("\r  3");
+            Thread.currentThread().sleep(500);
+            System.out.print("\r   2");
+            Thread.currentThread().sleep(500);
+            System.out.print("\r    1");
+            Thread.currentThread().sleep(500);
+            System.out.println("\rDone!");
+            Thread.currentThread().sleep(500);
+            System.out.print("ABCDEFG\r1234");
+        }
+        catch (Exception ex)
+        {
+        }
 
 //        ForkJoinWorkerThread  forkJoinPool = new ForkJoinWorkerThread();
 //

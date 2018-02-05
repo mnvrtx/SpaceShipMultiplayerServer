@@ -6,7 +6,7 @@ import com.fogok.dataobjects.PlayerData;
 import com.fogok.dataobjects.transactions.pvp.PvpTransactionHeaderType;
 import com.fogok.dataobjects.utils.Serialization;
 import com.fogok.dataobjects.utils.libgdxexternals.Pool;
-import com.fogok.pvpserver.PvpHandler;
+import com.fogok.pvpserver.PvpHandler.IOActionPool;
 import com.fogok.spaceshipserver.utlis.ExecutorToThreadPool;
 
 import java.net.InetSocketAddress;
@@ -36,9 +36,9 @@ public enum GameRoomManager {
     private ExecutorToThreadPool executorToThreadPool;
 
     private LogicHandler logicHandler;
-    private PvpHandler.IOActionPool ioActionPool;
+    private IOActionPool ioActionPool;
 
-    public void initLogicHandler(DatagramChannel cleanedChannel, PvpHandler.IOActionPool ioActionPool, ExecutorToThreadPool executorToThreadPool) {
+    public void initLogicHandler(DatagramChannel cleanedChannel, IOActionPool ioActionPool, ExecutorToThreadPool executorToThreadPool) {
         this.ioActionPool = ioActionPool;
         this.executorToThreadPool = executorToThreadPool;
         logicHandler = new LogicHandler(cleanedChannel);
@@ -97,12 +97,9 @@ public enum GameRoomManager {
                     synchronized (this) {
                         ioQueue = Arrays.copyOf(this.ioQueue.toArray(new IOAction[this.ioQueue.size()]), this.ioQueue.size());
                         this.ioQueue.clear();
-//                        if (ioQueue.length != 0)
-//                            info(String.format("Added - %s actions", ioQueue.length));
                     }
 
                     for (IOAction action : ioQueue) {
-//                        info("Read - " + action.inetSocketAddress);
                         Input receivedData = Serialization.instance.getInput();
                         receivedData.setBuffer(action.receivedBytes);
                         switch (PvpTransactionHeaderType.values()[receivedData.readInt(true)]) {
@@ -147,7 +144,6 @@ public enum GameRoomManager {
                     //post logic
                     for (IOAction action : ioQueue) {
                         if (action.needToPostLogic) {
-//                            info("Write - " + action.inetSocketAddress);
                             Output willPutData = Serialization.instance.getCleanedOutput();
                             willPutData.writeInt(PvpTransactionHeaderType.EVERYBODY_POOL.ordinal(), true);
 
@@ -157,24 +153,20 @@ public enum GameRoomManager {
                         }
                     }
 
-                    synchronized (this) {
-//                        if (ioQueue.length != 0)
-//                            info("free all... completed logic");
-                        for (IOAction action : ioQueue)
-                            GameRoomManager.instance.ioActionPool.freeSync(action);
-                    }
+                    freeAllIoActions();
 
                     try {
                         Thread.sleep(16);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         cancel();
+                        error("WTF ?????????");
                     }
 
                 } catch (Exception e) {
                     error("Error in logic thread #1 - ");
                     e.printStackTrace();
-                    cancel();
+                    freeAllIoActions();
                 }
 
             }
@@ -186,6 +178,11 @@ public enum GameRoomManager {
 
         private HashMap<String, GameRoom> getGameRooms() {
             return gameRooms;
+        }
+
+        private synchronized void freeAllIoActions(){
+            for (IOAction action : ioQueue)
+                GameRoomManager.instance.ioActionPool.freeSync(action);
         }
 
         public synchronized void addIoAction(IOAction action) {

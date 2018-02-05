@@ -162,8 +162,6 @@ public class ServiceStarter {
                 Bootstrap boot = new Bootstrap();
                 boot.group(workerGroup)
                         .channel(NioDatagramChannel.class)
-//                        .option(ChannelOption.SO_BROADCAST, true)
-//                        .option(ChannelOption.SO_REUSEADDR, true)
                         .handler(new ChannelInitializer<NioDatagramChannel>() {
                             @Override
                             protected void initChannel(NioDatagramChannel ch) throws Exception {

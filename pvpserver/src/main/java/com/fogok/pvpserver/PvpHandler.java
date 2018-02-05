@@ -31,7 +31,7 @@ public class PvpHandler extends BaseUdpChannelInboundHandlerAdapter<PvpConfig, D
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket recievedDatagramPacket) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket recievedDatagramPacket) {
         //read
         byte[] response = new byte[recievedDatagramPacket.content().readableBytes()];
         recievedDatagramPacket.content().readBytes(response);
