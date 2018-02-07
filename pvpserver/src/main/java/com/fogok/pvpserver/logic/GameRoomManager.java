@@ -1,7 +1,10 @@
 package com.fogok.pvpserver.logic;
 
+import com.esotericsoftware.kryo.io.ByteBufferInput;
+import com.esotericsoftware.kryo.io.ByteBufferOutput;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.fogok.dataobjects.ConnectToServiceImpl;
 import com.fogok.dataobjects.PlayerData;
 import com.fogok.dataobjects.transactions.pvp.PvpTransactionHeaderType;
 import com.fogok.dataobjects.utils.Serialization;
@@ -10,11 +13,14 @@ import com.fogok.pvpserver.PvpHandler.IOActionPool;
 import com.fogok.spaceshipserver.utlis.ExecutorToThreadPool;
 
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.DatagramPacket;
@@ -65,9 +71,12 @@ public enum GameRoomManager {
             this.cleanedChannel = cleanedChannel;
         }
 
+        private final ByteBufferInput input = new ByteBufferInput(ByteBuffer.allocate(ConnectToServiceImpl.BUFFER_SIZE));
+        private final ByteBufferOutput output = new ByteBufferOutput(ByteBuffer.allocateDirect(ConnectToServiceImpl.BUFFER_SIZE));
+
         public static class IOAction implements Pool.Poolable{
 
-            public byte[] receivedBytes;
+            public ByteBuf byteBuf;
             public InetSocketAddress inetSocketAddress;
 
             private GameRoom gameRoom;
@@ -100,7 +109,7 @@ public enum GameRoomManager {
                     }
 
                     for (IOAction action : ioQueue) {
-                        Input receivedData = Serialization.instance.getInput();
+                        ByteBuffer buffer = (ByteBuffer) input.getByteBuffer().clear();
                         receivedData.setBuffer(action.receivedBytes);
                         switch (PvpTransactionHeaderType.values()[receivedData.readInt(true)]) {
                             case START_DATA:
@@ -144,7 +153,7 @@ public enum GameRoomManager {
                     //post logic
                     for (IOAction action : ioQueue) {
                         if (action.needToPostLogic) {
-                            Output willPutData = Serialization.instance.getCleanedOutput();
+
                             willPutData.writeInt(PvpTransactionHeaderType.EVERYBODY_POOL.ordinal(), true);
 
                             Serialization.instance.getKryo().writeObject(willPutData, action.gameRoom.getGameController().getEveryBodyObjectsPool());
@@ -185,11 +194,14 @@ public enum GameRoomManager {
                 GameRoomManager.instance.ioActionPool.freeSync(action);
         }
 
-        public synchronized void addIoAction(IOAction action) {
-//            info("add to action");
-            if (ioQueue.stream().anyMatch((a) -> a.inetSocketAddress.equals(action.inetSocketAddress)))
-                ioQueue.removeIf((a) -> a.inetSocketAddress.equals(action.inetSocketAddress));
-            ioQueue.add(action);
+        public synchronized void addIoAction(IOAction targetAction) {
+            Iterator<IOAction> it = ioQueue.iterator();
+            while (it.hasNext())
+                if (it.next().inetSocketAddress.equals(targetAction.inetSocketAddress))
+                    it.remove(); //remove all
+
+
+            ioQueue.add(targetAction);
         }
     }
 

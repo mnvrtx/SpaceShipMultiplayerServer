@@ -8,6 +8,7 @@ import com.fogok.spaceshipserver.BaseUdpChannelInboundHandlerAdapter;
 
 import java.net.InetSocketAddress;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.DatagramPacket;
@@ -33,9 +34,7 @@ public class PvpHandler extends BaseUdpChannelInboundHandlerAdapter<PvpConfig, D
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket recievedDatagramPacket) {
         //read
-        byte[] response = new byte[recievedDatagramPacket.content().readableBytes()];
-        recievedDatagramPacket.content().readBytes(response);
-        GameRoomManager.instance.getLogicHandler().addIoAction(ioActionPool.obtainSync(response, recievedDatagramPacket.sender()));
+        GameRoomManager.instance.getLogicHandler().addIoAction(ioActionPool.obtainSync(recievedDatagramPacket.content().retain(), recievedDatagramPacket.sender()));
     }
 
 
@@ -51,10 +50,10 @@ public class PvpHandler extends BaseUdpChannelInboundHandlerAdapter<PvpConfig, D
         }
 
 
-        public synchronized IOAction obtainSync(byte[] response, InetSocketAddress inetSocketAddress) {
+        public synchronized IOAction obtainSync(ByteBuf byteBuf, InetSocketAddress inetSocketAddress) {
             IOAction ioAction = super.obtain();
             ioAction.inetSocketAddress = inetSocketAddress;
-            ioAction.receivedBytes = response;
+            ioAction.byteBuf = byteBuf;
             return ioAction;
         }
 
