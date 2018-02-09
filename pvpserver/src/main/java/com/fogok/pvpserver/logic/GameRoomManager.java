@@ -2,23 +2,19 @@ package com.fogok.pvpserver.logic;
 
 import com.esotericsoftware.kryo.io.ByteBufferInput;
 import com.esotericsoftware.kryo.io.ByteBufferOutput;
-import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.fogok.dataobjects.ConnectToServiceImpl;
 import com.fogok.dataobjects.PlayerData;
 import com.fogok.dataobjects.transactions.pvp.PvpTransactionHeaderType;
 import com.fogok.dataobjects.utils.Serialization;
+import com.fogok.dataobjects.utils.libgdxexternals.Array;
 import com.fogok.dataobjects.utils.libgdxexternals.Pool;
 import com.fogok.pvpserver.PvpHandler.IOActionPool;
 import com.fogok.spaceshipserver.utlis.ExecutorToThreadPool;
 
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -64,12 +60,12 @@ public enum GameRoomManager {
         /**Key - idRoom*/
         private HashMap<String, GameRoom> gameRooms = new HashMap<>();
 
-        private List<IOAction> ioQueue = new ArrayList<>();
-
         private final DatagramChannel cleanedChannel;
         private LogicHandler(DatagramChannel cleanedChannel) {
             this.cleanedChannel = cleanedChannel;
         }
+
+        private final ByteBuf outputBuf = Unpooled.directBuffer(ConnectToServiceImpl.BUFFER_SIZE);
 
         private final ByteBufferInput input = new ByteBufferInput(ByteBuffer.allocate(ConnectToServiceImpl.BUFFER_SIZE));
         private final ByteBufferOutput output = new ByteBufferOutput(ByteBuffer.allocateDirect(ConnectToServiceImpl.BUFFER_SIZE));
@@ -95,27 +91,30 @@ public enum GameRoomManager {
 
         private boolean interrupted;
 
+        private final Array<IOAction> ioActionsFixedArray = new Array<>(false, 30);
+        private final Array<IOAction> ioQueue = new Array<>(false, 30);
+
         @Override
         public void run() {
             while (!interrupted) {
                 try {
 
                     //before logic
-
-                    IOAction[] ioQueue;
                     synchronized (this) {
-                        ioQueue = Arrays.copyOf(this.ioQueue.toArray(new IOAction[this.ioQueue.size()]), this.ioQueue.size());
+                        ioActionsFixedArray.clear();
+                        for (int i = 0; i < this.ioQueue.size; i++)
+                             ioActionsFixedArray.add(this.ioQueue.get(i));
+
                         this.ioQueue.clear();
                     }
 
-                    for (IOAction action : ioQueue) {
-                        ByteBuffer buffer = (ByteBuffer) input.getByteBuffer().clear();
-                        receivedData.setBuffer(action.receivedBytes);
-                        switch (PvpTransactionHeaderType.values()[receivedData.readInt(true)]) {
+                    for (IOAction action : ioActionsFixedArray) {
+                        input.setBuffer(action.byteBuf.nioBuffer());
+                        switch (PvpTransactionHeaderType.values()[input.readInt(true)]) {
                             case START_DATA:
 
-                                String idRoom = receivedData.readString();
-                                String authPlayerToken = receivedData.readString();
+                                String idRoom = input.readString();
+                                String authPlayerToken = input.readString();
 
 
                                 //TODO: authPlayerToken requires checks (help to this - mongo connector)
@@ -135,7 +134,8 @@ public enum GameRoomManager {
                             case CONSOLE_STATE:
                                 if (allPlayersInformation.containsKey(getKeyFromAddress(action.inetSocketAddress))) {
                                     Serialization.instance.setPlayerData(allPlayersInformation.get(getKeyFromAddress(action.inetSocketAddress)).getPlayerData());
-                                    Serialization.instance.getKryo().readObject(receivedData, PlayerData.class);
+                                    Serialization.instance.getKryo().readObject(input, PlayerData.class);
+                                    info("" + Serialization.instance.getPlayerData());
 
                                     action.needToPostLogic = true;
                                     action.gameRoom = allPlayersInformation.get(getKeyFromAddress(action.inetSocketAddress)).getGameRoom();
@@ -151,14 +151,16 @@ public enum GameRoomManager {
 
 
                     //post logic
-                    for (IOAction action : ioQueue) {
+                    for (IOAction action : ioActionsFixedArray) {
                         if (action.needToPostLogic) {
+                            output.clear();
+                            output.writeInt(PvpTransactionHeaderType.EVERYBODY_POOL.ordinal(), true);
 
-                            willPutData.writeInt(PvpTransactionHeaderType.EVERYBODY_POOL.ordinal(), true);
+                            Serialization.instance.getKryo().writeObject(output, action.gameRoom.getGameController().getEveryBodyObjectsPool());
+                            info("" + action.gameRoom.getGameController().getEveryBodyObjectsPool());
+                            output.getByteBuffer().flip();
 
-                            Serialization.instance.getKryo().writeObject(willPutData, action.gameRoom.getGameController().getEveryBodyObjectsPool());
-
-                            cleanedChannel.writeAndFlush(new DatagramPacket(Unpooled.buffer().writeBytes(willPutData.getBuffer()), action.inetSocketAddress));
+                            cleanedChannel.writeAndFlush(new DatagramPacket(outputBuf.writeBytes(output.getByteBuffer()).retain(), action.inetSocketAddress));
                         }
                     }
 
@@ -195,12 +197,14 @@ public enum GameRoomManager {
         }
 
         public synchronized void addIoAction(IOAction targetAction) {
-            Iterator<IOAction> it = ioQueue.iterator();
-            while (it.hasNext())
-                if (it.next().inetSocketAddress.equals(targetAction.inetSocketAddress))
-                    it.remove(); //remove all
+//            Iterator<IOAction> it = ioQueue.iterator();
+//            while (it.hasNext())
+//                if (it.next().inetSocketAddress.equals(targetAction.inetSocketAddress))
+//                    it.remove(); //remove all
 
-
+            for (int i = 0; i < ioQueue.size; i++)
+                if (ioQueue.get(i).inetSocketAddress.equals(targetAction.inetSocketAddress))
+                    ioQueue.removeIndex(i);
             ioQueue.add(targetAction);
         }
     }
