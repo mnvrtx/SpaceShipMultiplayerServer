@@ -2,7 +2,6 @@ package com.fogok.pvpserver.logic;
 
 import com.esotericsoftware.kryo.io.ByteBufferInput;
 import com.esotericsoftware.kryo.io.ByteBufferOutput;
-import com.esotericsoftware.kryo.io.Output;
 import com.fogok.dataobjects.ConnectToServiceImpl;
 import com.fogok.dataobjects.PlayerData;
 import com.fogok.dataobjects.transactions.pvp.PvpTransactionHeaderType;
@@ -20,6 +19,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.DatagramPacket;
+import io.netty.util.ReferenceCountUtil;
 
 import static com.esotericsoftware.minlog.Log.error;
 import static com.esotericsoftware.minlog.Log.info;
@@ -82,7 +82,6 @@ public enum GameRoomManager {
             }
 
             @Override
-
             public String toString() {
                 return inetSocketAddress + "";
             }
@@ -116,7 +115,6 @@ public enum GameRoomManager {
                                 String idRoom = input.readString();
                                 String authPlayerToken = input.readString();
 
-
                                 //TODO: authPlayerToken requires checks (help to this - mongo connector)
                                 if (allPlayersInformation.containsKey(getKeyFromAddress(action.inetSocketAddress)))
                                     continue;
@@ -124,18 +122,18 @@ public enum GameRoomManager {
                                 allPlayersInformation.put(getKeyFromAddress(action.inetSocketAddress),
                                         gameRooms.get(idRoom).connectPlayer(action.inetSocketAddress));
 
-                                Output willPutData = Serialization.instance.getCleanedOutput();
-                                willPutData.writeInt(PvpTransactionHeaderType.START_DATA.ordinal(), true);
-                                willPutData.writeBoolean(true);
+                                output.clear();
+                                output.writeInt(PvpTransactionHeaderType.START_DATA.ordinal(), true);
+                                output.writeBoolean(true);
 
-                                ch.writeAndFlush(new DatagramPacket(Unpooled.wrappedBuffer(output.getByteBuffer()), action.inetSocketAddress));
+                                ch.writeAndFlush(new DatagramPacket(Unpooled.wrappedBuffer((ByteBuffer) output.getByteBuffer().flip()), action.inetSocketAddress));
                                 action.needToPostLogic = false;
                                 break;
                             case CONSOLE_STATE:
                                 if (allPlayersInformation.containsKey(getKeyFromAddress(action.inetSocketAddress))) {
                                     Serialization.instance.setPlayerData(allPlayersInformation.get(getKeyFromAddress(action.inetSocketAddress)).getPlayerData());
                                     Serialization.instance.getKryo().readObject(input, PlayerData.class);
-                                    info("" + Serialization.instance.getPlayerData());
+//                                    info("" + Serialization.instance.getPlayerData());
 
                                     action.needToPostLogic = true;
                                     action.gameRoom = allPlayersInformation.get(getKeyFromAddress(action.inetSocketAddress)).getGameRoom();
@@ -143,6 +141,7 @@ public enum GameRoomManager {
                                     info("WTF");
                                 break;
                         }
+                        releaseByteBuf(action.byteBuf);
                     }
 
 
@@ -157,9 +156,9 @@ public enum GameRoomManager {
                             output.writeInt(PvpTransactionHeaderType.EVERYBODY_POOL.ordinal(), true);
 
                             Serialization.instance.getKryo().writeObject(output, action.gameRoom.getGameController().getEveryBodyObjectsPool());
-                            info("" + action.gameRoom.getGameController().getEveryBodyObjectsPool());
+//                            info("" + action.gameRoom.getGameController().getEveryBodyObjectsPool());
 
-                            ch.writeAndFlush(new DatagramPacket(Unpooled.wrappedBuffer(output.getByteBuffer()), action.inetSocketAddress));
+                            ch.writeAndFlush(new DatagramPacket(Unpooled.wrappedBuffer((ByteBuffer) output.getByteBuffer().flip()), action.inetSocketAddress));
                         }
                     }
 
@@ -190,20 +189,22 @@ public enum GameRoomManager {
             return gameRooms;
         }
 
+        private synchronized void releaseByteBuf(ByteBuf byteBuf) {
+            ReferenceCountUtil.release(byteBuf);
+        }
+
         private synchronized void freeAllIoActions(){
             for (IOAction action : ioQueue)
                 GameRoomManager.instance.ioActionPool.freeSync(action);
         }
 
         public synchronized void addIoAction(IOAction targetAction) {
-//            Iterator<IOAction> it = ioQueue.iterator();
-//            while (it.hasNext())
-//                if (it.next().inetSocketAddress.equals(targetAction.inetSocketAddress))
-//                    it.remove(); //remove all
-
             for (int i = 0; i < ioQueue.size; i++)
-                if (ioQueue.get(i).inetSocketAddress.equals(targetAction.inetSocketAddress))
+                if (ioQueue.get(i).inetSocketAddress.equals(targetAction.inetSocketAddress)) {
                     ioQueue.removeIndex(i);
+                    info("remove same action in ioQueue");
+                }
+
             ioQueue.add(targetAction);
         }
     }

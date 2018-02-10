@@ -50,7 +50,7 @@ public class PvpHandler extends BaseUdpChannelInboundHandlerAdapter<PvpConfig, D
         }
 
 
-        public synchronized IOAction obtainSync(ByteBuf byteBuf, InetSocketAddress inetSocketAddress) {
+        private synchronized IOAction obtainSync(ByteBuf byteBuf, InetSocketAddress inetSocketAddress) {
             IOAction ioAction = super.obtain();
             ioAction.inetSocketAddress = inetSocketAddress;
             ioAction.byteBuf = byteBuf;
