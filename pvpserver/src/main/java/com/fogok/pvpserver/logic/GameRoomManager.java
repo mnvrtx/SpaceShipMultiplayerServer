@@ -60,12 +60,10 @@ public enum GameRoomManager {
         /**Key - idRoom*/
         private HashMap<String, GameRoom> gameRooms = new HashMap<>();
 
-        private final DatagramChannel cleanedChannel;
-        private LogicHandler(DatagramChannel cleanedChannel) {
-            this.cleanedChannel = cleanedChannel;
+        private final DatagramChannel ch;
+        private LogicHandler(DatagramChannel ch) {
+            this.ch = ch;
         }
-
-        private final ByteBuf outputBuf = Unpooled.directBuffer(ConnectToServiceImpl.BUFFER_SIZE);
 
         private final ByteBufferInput input = new ByteBufferInput(ByteBuffer.allocate(ConnectToServiceImpl.BUFFER_SIZE));
         private final ByteBufferOutput output = new ByteBufferOutput(ByteBuffer.allocateDirect(ConnectToServiceImpl.BUFFER_SIZE));
@@ -84,6 +82,7 @@ public enum GameRoomManager {
             }
 
             @Override
+
             public String toString() {
                 return inetSocketAddress + "";
             }
@@ -110,6 +109,7 @@ public enum GameRoomManager {
 
                     for (IOAction action : ioActionsFixedArray) {
                         input.setBuffer(action.byteBuf.nioBuffer());
+
                         switch (PvpTransactionHeaderType.values()[input.readInt(true)]) {
                             case START_DATA:
 
@@ -128,7 +128,7 @@ public enum GameRoomManager {
                                 willPutData.writeInt(PvpTransactionHeaderType.START_DATA.ordinal(), true);
                                 willPutData.writeBoolean(true);
 
-                                cleanedChannel.writeAndFlush(new DatagramPacket(Unpooled.buffer().writeBytes(willPutData.getBuffer()), action.inetSocketAddress));
+                                ch.writeAndFlush(new DatagramPacket(Unpooled.wrappedBuffer(output.getByteBuffer()), action.inetSocketAddress));
                                 action.needToPostLogic = false;
                                 break;
                             case CONSOLE_STATE:
@@ -158,9 +158,8 @@ public enum GameRoomManager {
 
                             Serialization.instance.getKryo().writeObject(output, action.gameRoom.getGameController().getEveryBodyObjectsPool());
                             info("" + action.gameRoom.getGameController().getEveryBodyObjectsPool());
-                            output.getByteBuffer().flip();
 
-                            cleanedChannel.writeAndFlush(new DatagramPacket(outputBuf.writeBytes(output.getByteBuffer()).retain(), action.inetSocketAddress));
+                            ch.writeAndFlush(new DatagramPacket(Unpooled.wrappedBuffer(output.getByteBuffer()), action.inetSocketAddress));
                         }
                     }
 
