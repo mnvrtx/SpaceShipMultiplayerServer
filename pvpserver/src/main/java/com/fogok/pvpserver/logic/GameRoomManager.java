@@ -78,7 +78,7 @@ public enum GameRoomManager {
 
             @Override
             public void reset() {
-
+                needToPostLogic = false;
             }
 
             @Override
@@ -89,7 +89,7 @@ public enum GameRoomManager {
 
         private boolean interrupted;
 
-        private final Array<IOAction> ioActionsFixedArray = new Array<>(false, 30);
+        private final Array<IOAction> ioActionsThreadSafe = new Array<>(false, 30);
         private final Array<IOAction> ioQueue = new Array<>(false, 30);
 
         @Override
@@ -97,17 +97,19 @@ public enum GameRoomManager {
             while (!interrupted) {
                 try {
 
-                    //before logic
+                    //define: what kind handle actions
                     synchronized (this) {
-                        ioActionsFixedArray.clear();
+                        ioActionsThreadSafe.clear();
                         for (int i = 0; i < this.ioQueue.size; i++)
-                             ioActionsFixedArray.add(this.ioQueue.get(i));
-
-                        this.ioQueue.clear();
+                             ioActionsThreadSafe.add(this.ioQueue.get(i));
                     }
 
-                    for (IOAction action : ioActionsFixedArray) {
+                    for (IOAction action : ioActionsThreadSafe) {
                         input.setBuffer(action.byteBuf.nioBuffer());
+
+                        //check bytes count
+                        if (!checkBytesCount(input))
+                            continue;
 
                         switch (PvpTransactionHeaderType.values()[input.readInt(true)]) {
                             case START_DATA:
@@ -115,17 +117,17 @@ public enum GameRoomManager {
                                 String idRoom = input.readString();
                                 String authPlayerToken = input.readString();
 
+//                                info(idRoom + " " + authPlayerToken);
                                 //TODO: authPlayerToken requires checks (help to this - mongo connector)
-                                if (allPlayersInformation.containsKey(getKeyFromAddress(action.inetSocketAddress)))
-                                    continue;
 
-                                allPlayersInformation.put(getKeyFromAddress(action.inetSocketAddress),
-                                        gameRooms.get(idRoom).connectPlayer(action.inetSocketAddress));
+                                allPlayersInformation.put(getKeyFromAddress(action.inetSocketAddress), gameRooms.get(idRoom).connectPlayer(action.inetSocketAddress));
 
                                 output.clear();
+                                output.writeInt(0);
                                 output.writeInt(PvpTransactionHeaderType.START_DATA.ordinal(), true);
                                 output.writeBoolean(true);
 
+                                writeBytesSizeToHeader(output);
                                 ch.writeAndFlush(new DatagramPacket(Unpooled.wrappedBuffer((ByteBuffer) output.getByteBuffer().flip()), action.inetSocketAddress));
                                 action.needToPostLogic = false;
                                 break;
@@ -141,7 +143,6 @@ public enum GameRoomManager {
                                     info("WTF");
                                 break;
                         }
-                        releaseByteBuf(action.byteBuf);
                     }
 
 
@@ -150,14 +151,16 @@ public enum GameRoomManager {
 
 
                     //post logic
-                    for (IOAction action : ioActionsFixedArray) {
+                    for (IOAction action : ioActionsThreadSafe) {
                         if (action.needToPostLogic) {
                             output.clear();
+                            output.writeInt(0);
                             output.writeInt(PvpTransactionHeaderType.EVERYBODY_POOL.ordinal(), true);
 
                             Serialization.instance.getKryo().writeObject(output, action.gameRoom.getGameController().getEveryBodyObjectsPool());
 //                            info("" + action.gameRoom.getGameController().getEveryBodyObjectsPool());
 
+                            writeBytesSizeToHeader(output);
                             ch.writeAndFlush(new DatagramPacket(Unpooled.wrappedBuffer((ByteBuffer) output.getByteBuffer().flip()), action.inetSocketAddress));
                         }
                     }
@@ -181,6 +184,19 @@ public enum GameRoomManager {
             }
         }
 
+        private boolean checkBytesCount(ByteBufferInput input) {
+            int targetBytes = input.readInt();
+//            info(input.getByteBuffer().limit() + " " + targetBytes);
+            return input.getByteBuffer().limit() == targetBytes;
+        }
+
+        private void writeBytesSizeToHeader(ByteBufferOutput output){
+            int pos = output.getByteBuffer().position();
+            output.setPosition(0);
+            output.writeInt(pos);
+            output.setPosition(pos);
+        }
+
         public void cancel() {
             interrupted = true;
         }
@@ -189,23 +205,32 @@ public enum GameRoomManager {
             return gameRooms;
         }
 
-        private synchronized void releaseByteBuf(ByteBuf byteBuf) {
-            ReferenceCountUtil.release(byteBuf);
-        }
-
+        /**
+         * Release all buffers
+         * Return to pool all actions
+         *
+         * clear queue
+         */
         private synchronized void freeAllIoActions(){
-            for (IOAction action : ioQueue)
+            for (IOAction action : ioQueue) {
+                ReferenceCountUtil.release(action.byteBuf);
                 GameRoomManager.instance.ioActionPool.freeSync(action);
+            }
+            ioQueue.clear();
         }
 
+
+        /**
+         * Add action to ioQueue if no address not contains
+         */
         public synchronized void addIoAction(IOAction targetAction) {
             for (int i = 0; i < ioQueue.size; i++)
                 if (ioQueue.get(i).inetSocketAddress.equals(targetAction.inetSocketAddress)) {
-                    ioQueue.removeIndex(i);
-                    info("remove same action in ioQueue");
+//                    info("ioqueue is contain action");
+                    return;
                 }
-
             ioQueue.add(targetAction);
+//            info("add action to ioqueue");
         }
     }
 

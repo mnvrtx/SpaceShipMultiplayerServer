@@ -38,7 +38,7 @@ public class PvpHandler extends BaseUdpChannelInboundHandlerAdapter<PvpConfig, D
     }
 
 
-    private IOActionPool ioActionPool = new IOActionPool();
+    private volatile IOActionPool ioActionPool = new IOActionPool();
 
     /**
      * Thread safe io impl

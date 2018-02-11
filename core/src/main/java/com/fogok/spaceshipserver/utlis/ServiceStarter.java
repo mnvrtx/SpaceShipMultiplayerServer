@@ -166,6 +166,7 @@ public class ServiceStarter {
                             @Override
                             protected void initChannel(NioDatagramChannel ch) throws Exception {
                                 ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
+                                ch.config().setReuseAddress(true);
                                 BaseUdpChannelInboundHandlerAdapter coreHandler = serviceParamsBuilder.coreUdpHandler.newInstance();
                                 coreHandler.init(specificConfigWithCommonConfig = serviceParamsBuilder.specificConfigWithCommonConfig);
                                 ch.pipeline().addLast(coreHandler);
