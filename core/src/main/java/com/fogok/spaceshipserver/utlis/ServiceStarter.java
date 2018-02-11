@@ -4,12 +4,10 @@ import com.beust.jcommander.JCommander;
 import com.fogok.io.Fgkio;
 import com.fogok.io.logging.Logging;
 import com.fogok.spaceshipserver.BaseTcpChannelInboundHandlerAdapter;
-import com.fogok.spaceshipserver.BaseUdpChannelInboundHandlerAdapter;
 import com.fogok.spaceshipserver.config.BaseConfigModel;
 
 import java.io.IOException;
 
-import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
@@ -18,7 +16,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.FixedRecvByteBufAllocator;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
 
@@ -40,9 +37,7 @@ public class ServiceStarter {
         private CLIArgs cliArgs;
         private BaseConfigModel specificConfigWithCommonConfig;
         private Class<? extends BaseTcpChannelInboundHandlerAdapter> coreTcpHandler;
-        private Class<? extends BaseUdpChannelInboundHandlerAdapter> coreUdpHandler;
         private Class<S> exceptionHandler;
-        private boolean tcp = true;
 
         public ServiceParamsBuilder<S> setCliArgs(CLIArgs cliArgs) {
             this.cliArgs = cliArgs;
@@ -56,13 +51,6 @@ public class ServiceStarter {
 
         public ServiceParamsBuilder<S> setCoreTcpHandler(Class<? extends BaseTcpChannelInboundHandlerAdapter> coreHandler) {
             this.coreTcpHandler = coreHandler;
-            this.tcp = true;
-            return this;
-        }
-
-        public ServiceParamsBuilder<S> setCoreUdpHandler(Class<? extends BaseUdpChannelInboundHandlerAdapter> coreUdpHandler) {
-            this.coreUdpHandler = coreUdpHandler;
-            this.tcp = false;
             return this;
         }
 
@@ -101,7 +89,7 @@ public class ServiceStarter {
             return;
         }
 
-        if (serviceParamsBuilder.coreTcpHandler == null && serviceParamsBuilder.coreUdpHandler == null) {
+        if (serviceParamsBuilder.coreTcpHandler == null) {
             error("CoreHandler is not defined");
             return;
         }
@@ -131,61 +119,34 @@ public class ServiceStarter {
         }
         int port = Integer.parseInt(portStr);
 
-        EventLoopGroup bossGroup = null;
-        if (serviceParamsBuilder.tcp)
-            bossGroup = new NioEventLoopGroup();
+        EventLoopGroup bossGroup = new NioEventLoopGroup();;
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         try {
 
-
-            ChannelFuture future;
-            if (serviceParamsBuilder.tcp) {
-                ServerBootstrap boot = new ServerBootstrap();
-                boot.group(bossGroup, workerGroup)
-                        .channel(NioServerSocketChannel.class)
-                        .childHandler(new ChannelInitializer<SocketChannel>() {
-                            @Override
-                            public void initChannel(SocketChannel ch) throws Exception {
-                                ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
-                                ch.pipeline().addLast(new LoggingHandler());
-                                BaseTcpChannelInboundHandlerAdapter coreHandler = serviceParamsBuilder.coreTcpHandler.newInstance();
-                                coreHandler.init(specificConfigWithCommonConfig = serviceParamsBuilder.specificConfigWithCommonConfig);
-                                ch.pipeline().addLast(coreHandler);
-                                ch.pipeline().addLast(serviceParamsBuilder.exceptionHandler.newInstance());
-                            }
-                        });
-                future = boot.bind(overrideIp, port).sync();
-                info(String.format("Start service %s success with %s !", serviceParamsBuilder.cliArgs.serviceName, future.channel().localAddress()));
-                future.channel().closeFuture().sync();
-            } else {
-                Bootstrap boot = new Bootstrap();
-                boot.group(workerGroup)
-                        .channel(NioDatagramChannel.class)
-                        .handler(new ChannelInitializer<NioDatagramChannel>() {
-                            @Override
-                            protected void initChannel(NioDatagramChannel ch) throws Exception {
-                                ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
-                                ch.config().setReuseAddress(true);
-                                BaseUdpChannelInboundHandlerAdapter coreHandler = serviceParamsBuilder.coreUdpHandler.newInstance();
-                                coreHandler.init(specificConfigWithCommonConfig = serviceParamsBuilder.specificConfigWithCommonConfig);
-                                ch.pipeline().addLast(coreHandler);
-//                                ch.pipeline().addLast(new LoggingHandler(LogLevel.TRACE));
-                                ch.pipeline().addLast(serviceParamsBuilder.exceptionHandler.newInstance());
-                            }
-                        });
-                future = boot.bind(overrideIp, port).sync();
-                info(String.format("Start service %s success with %s !", serviceParamsBuilder.cliArgs.serviceName, overrideIp + ":" + portStr));
-                future.channel().closeFuture().sync();
-            }
-
+            ServerBootstrap boot = new ServerBootstrap();
+            boot.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        public void initChannel(SocketChannel ch) throws Exception {
+                            ch.config().setRecvByteBufAllocator(new FixedRecvByteBufAllocator(262144));
+                            ch.pipeline().addLast(new LoggingHandler());
+                            BaseTcpChannelInboundHandlerAdapter coreHandler = serviceParamsBuilder.coreTcpHandler.newInstance();
+                            coreHandler.init(specificConfigWithCommonConfig = serviceParamsBuilder.specificConfigWithCommonConfig);
+                            ch.pipeline().addLast(coreHandler);
+                            ch.pipeline().addLast(serviceParamsBuilder.exceptionHandler.newInstance());
+                        }
+                    });
+            ChannelFuture future = boot.bind(overrideIp, port).sync();
+            info(String.format("Start service %s success with %s !", serviceParamsBuilder.cliArgs.serviceName, future.channel().localAddress()));
+            future.channel().closeFuture().sync();
 
         } catch (Exception e) {
             error(String.format("Error start service %s !", serviceParamsBuilder.cliArgs.serviceName), e);
         } finally {
             workerGroup.shutdownGracefully();
-            if (bossGroup != null)
-                bossGroup.shutdownGracefully();
+            bossGroup.shutdownGracefully();
         }
     }
 

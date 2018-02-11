@@ -1,69 +1,34 @@
 package com.fogok.pvpserver;
 
-import com.fogok.dataobjects.utils.libgdxexternals.Pool;
 import com.fogok.pvpserver.config.PvpConfig;
-import com.fogok.pvpserver.logic.GameRoomManager;
-import com.fogok.pvpserver.logic.GameRoomManager.LogicHandler.IOAction;
-import com.fogok.spaceshipserver.BaseUdpChannelInboundHandlerAdapter;
-
-import java.net.InetSocketAddress;
+import com.fogok.pvpserver.logic.GmRoomManager;
+import com.fogok.spaceshipserver.BaseTcpChannelInboundHandlerAdapter;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.socket.DatagramChannel;
-import io.netty.channel.socket.DatagramPacket;
 
-import static com.esotericsoftware.minlog.Log.info;
-
-public class PvpHandler extends BaseUdpChannelInboundHandlerAdapter<PvpConfig, DatagramPacket> {
-
-    private DatagramChannel cleanedChannel;
+public class PvpHandler extends BaseTcpChannelInboundHandlerAdapter<PvpConfig> {
 
     @Override
     public void init() {
-
+//        GmRoomManager.instance.initLogicHandler(actPool, executorToThreadPool);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
-        cleanedChannel = (DatagramChannel) ctx.channel();
-        GameRoomManager.instance.initLogicHandler(cleanedChannel, ioActionPool, executorToThreadPool);
+
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket recievedDatagramPacket) {
-        //read
-        GameRoomManager.instance.getLogicHandler().addIoAction(ioActionPool.obtainSync(recievedDatagramPacket.content().retain(), recievedDatagramPacket.sender()));
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        GmRoomManager.instance.getLgcHandl().addIoAction(
+                GmRoomManager.instance.getActPool().obtainSync(((ByteBuf)msg).retain(),
+                        ctx.channel()));
     }
 
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 
-    private volatile IOActionPool ioActionPool = new IOActionPool();
-
-    /**
-     * Thread safe io impl
-     */
-    public static class IOActionPool extends Pool<IOAction>{
-        @Override
-        protected IOAction newObject() {
-            return new IOAction();
-        }
-
-
-        private synchronized IOAction obtainSync(ByteBuf byteBuf, InetSocketAddress inetSocketAddress) {
-            IOAction ioAction = super.obtain();
-            ioAction.inetSocketAddress = inetSocketAddress;
-            ioAction.byteBuf = byteBuf;
-            return ioAction;
-        }
-
-        public synchronized void freeSync(IOAction object) {
-            super.free(object);
-        }
-
-        public void poolStatus(){
-            info(String.format("Free objects: %s", getFree()));
-        }
     }
 
 }
